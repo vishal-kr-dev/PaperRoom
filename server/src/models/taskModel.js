@@ -38,6 +38,10 @@ const taskSchema = new Schema(
       enum: ["todo", "in-progress", "done"],
       default: "todo",
     },
+    dailyTask: {
+      type: Boolean,
+      default: false,
+    },
     completedBy: [
       {
         type: Schema.Types.ObjectId,

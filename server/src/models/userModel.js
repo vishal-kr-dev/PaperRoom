@@ -145,7 +145,6 @@ userSchema.methods.updateStreak = async function () {
   return await this.save();
 };
 
-userSchema.index({ email: 1 });
 userSchema.index({ roomId: 1 });
 
 export const User = mongoose.model("User", userSchema);

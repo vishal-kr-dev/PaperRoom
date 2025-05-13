@@ -1,7 +1,7 @@
 import { Schema } from "mongoose";
 
 const roomSchema = new Schema({
-  roomCode: {
+  roomId: {
     type: String,
     unique: true,
     required: true,
@@ -62,7 +62,6 @@ roomSchema.pre("save", function (next) {
   next();
 });
 
-roomSchema.index({ roomCode: 1 });
 roomSchema.index({ ownerId: 1 });
 
 export const Room = mongoose.model("Room", roomSchema);
