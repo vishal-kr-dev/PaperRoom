@@ -1,25 +1,23 @@
 import dotenv from "dotenv";
-import server from "./server.js";
-import connectDB from "./db/index.js";
-
 dotenv.config({ path: "./.env" });
 
-process.setMaxListeners(15);
+import connectDB from "./db/index.js";
+import app from "./app.js";
 
 const serverPort = process.env.PORT || 8080;
 
 connectDB()
   .then(() => {
-    server.listen(serverPort, () => {
+    app.listen(serverPort, () => {
       console.log({
         serverStatus: `🌐 Application is Running at port: ${serverPort}`,
       });
     });
 
-    server.on("error", (err) => {
-      console.log("Error occurred at index.js", err);
+    app.on("error", (err) => {
+      console.error("Error occurred at index.js", err);
     });
   })
   .catch((error) => {
-    console.log("DB connection failed from index.js", error);
+    console.error("DB connection failed from index.js", error);
   });
