@@ -1,19 +1,24 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env" });
+
 import { errorHandler } from "./utils/errorHandler.js";
 
 import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
-// Middlewares
+console.log("url", process.env.FRONTEND_URL)
+
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL,
+        origin: process.env.FRONTEND_URL || "http://localhost:3000",
         credentials: true,
     })
 );
+
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));

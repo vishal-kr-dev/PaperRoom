@@ -13,15 +13,11 @@ const registerUser = asyncHandler(async (req, res) => {
     const emailLower = email.toLowerCase();
 
     const existingUser = await User.findOne({
-        $or: [{ email: emailLower }, { username }]
+        email: emailLower,
     });
 
     if (existingUser) {
-        const message =
-            existingUser.email === emailLower
-                ? "Email is already in use"
-                : "Username is already taken";
-        throw new APIerror(409, message);
+        throw new APIerror(409, "Email is already in use");
     }
 
     const user = new User({
@@ -44,6 +40,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
+    
     if (!email || !password) {
         throw new APIerror(400, "All required fields must be provided");
     }
@@ -81,12 +78,19 @@ const loginUser = asyncHandler(async (req, res) => {
         sameSite: "Strict",
     });
 
-    return sendResponse(res, 200, user, "User logged in successfully");
+    const publicUser = {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+    };
+
+    return sendResponse(res, 200, publicUser, "User logged in successfully");
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
     const { userId } = req.body;
-    
+
     if (!userId) {
         throw new APIerror(400, "User ID is required");
     }
@@ -105,4 +109,21 @@ const logoutUser = asyncHandler(async (req, res) => {
     return sendResponse(res, 200, {}, "User logged out successfully");
 });
 
-export { registerUser, loginUser, logoutUser };
+const getMe = asyncHandler(async (req, res) => {
+    const user = req.user;
+
+    if (!user) {
+        throw new APIerror(404, "User not found");
+    }
+
+    const publicUser = {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+    };
+
+    return sendResponse(res, 200, publicUser, "User data retrieved successfully");
+})
+
+export { registerUser, loginUser, logoutUser, getMe };
