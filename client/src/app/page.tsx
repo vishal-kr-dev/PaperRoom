@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
 
 const LandingPage = () => {
     const router = useRouter();
@@ -150,7 +151,9 @@ const LandingPage = () => {
     ];
 
     return (
-        <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 overflow-hidden pt-16 lg:pt-20">
+        <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden pt-16 lg:pt-20 transition-colors duration-300">
+            <Navbar />
+
             {/* Cursor follower */}
             <div
                 className="fixed w-4 h-4 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full pointer-events-none z-40 opacity-60 blur-sm transition-all duration-300 ease-out"
@@ -164,9 +167,9 @@ const LandingPage = () => {
             <section className="relative min-h-screen flex items-center justify-center lg:-my-6 px-6 lg:px-8 overflow-hidden">
                 {/* Animated Background Elements */}
                 <div className="absolute inset-0">
-                    <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-br from-purple-400/30 to-pink-400/30 rounded-full blur-3xl animate-pulse"></div>
-                    <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                    <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-full blur-2xl animate-bounce"></div>
+                    <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-br from-purple-400/30 to-pink-400/30 dark:from-purple-600/20 dark:to-pink-600/20 rounded-full blur-3xl animate-pulse"></div>
+                    <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 dark:from-blue-600/20 dark:to-cyan-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+                    <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 dark:from-yellow-600/10 dark:to-orange-600/10 rounded-full blur-2xl animate-bounce"></div>
                 </div>
 
                 <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
@@ -179,21 +182,21 @@ const LandingPage = () => {
                         }`}
                     >
                         <div className="space-y-6">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-full border border-indigo-200 backdrop-blur-sm">
-                                <Sparkles className="w-4 h-4 text-indigo-600" />
-                                <span className="text-sm font-medium text-indigo-700">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 rounded-full border border-indigo-200 dark:border-indigo-700 backdrop-blur-sm">
+                                <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
                                     New: Real-time collaboration features
                                 </span>
                             </div>
 
-                            <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
+                            <h1 className="text-5xl lg:text-7xl font-bold leading-tight text-gray-900 dark:text-white">
                                 Welcome to{" "}
                                 <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                                     PaperRoom
                                 </span>
                             </h1>
 
-                            <p className="text-xl text-gray-600 max-w-2xl leading-relaxed">
+                            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
                                 A collaborative space where teams can organize
                                 tasks based on shared interests. Join rooms,
                                 create tasks, and track progress together with
@@ -210,31 +213,7 @@ const LandingPage = () => {
                                 Get Started
                                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                             </Button>
-                            {/* <Button
-                                size="lg"
-                                variant="outline"
-                                className="group border-2 hover:bg-gray-50 transition-all duration-300"
-                            >
-                                Try Demo Room
-                                <Zap className="ml-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
-                            </Button> */}
                         </div>
-
-                        {/* Stats */}
-                        {/* <div className="flex gap-8 pt-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-gray-900">10K+</div>
-                <div className="text-sm text-gray-600">Active Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-gray-900">500+</div>
-                <div className="text-sm text-gray-600">Teams</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-gray-900">50K+</div>
-                <div className="text-sm text-gray-600">Tasks Completed</div>
-              </div>
-            </div> */}
                     </div>
 
                     {/* Hero Visual */}
@@ -246,9 +225,9 @@ const LandingPage = () => {
                         }`}
                     >
                         <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-3xl blur-3xl animate-pulse"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 dark:from-indigo-600/30 dark:to-purple-600/30 rounded-3xl blur-3xl animate-pulse"></div>
 
-                            <Card className="relative bg-white/80 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2">
+                            <Card className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2">
                                 <CardHeader className="pb-4">
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -256,7 +235,7 @@ const LandingPage = () => {
                                         </CardTitle>
                                         <div className="flex items-center gap-1">
                                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                            <span className="text-sm font-medium">
+                                            <span className="text-sm font-medium text-gray-900 dark:text-white">
                                                 4.9
                                             </span>
                                         </div>
@@ -264,19 +243,19 @@ const LandingPage = () => {
                                     <div className="flex flex-wrap gap-2 pt-2">
                                         <Badge
                                             variant="secondary"
-                                            className="bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border-indigo-200"
+                                            className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700"
                                         >
                                             UI/UX
                                         </Badge>
                                         <Badge
                                             variant="secondary"
-                                            className="bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border-purple-200"
+                                            className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700"
                                         >
                                             Wireframing
                                         </Badge>
                                         <Badge
                                             variant="secondary"
-                                            className="bg-gradient-to-r from-pink-50 to-red-50 text-pink-700 border-pink-200"
+                                            className="bg-gradient-to-r from-pink-50 to-red-50 dark:from-pink-900/30 dark:to-red-900/30 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-700"
                                         >
                                             Prototyping
                                         </Badge>
@@ -304,20 +283,20 @@ const LandingPage = () => {
                                         ].map((item, index) => (
                                             <div
                                                 key={index}
-                                                className="group p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                                                className="group p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                                             >
                                                 <div className="flex items-center justify-between mb-2">
-                                                    <span className="font-medium group-hover:text-indigo-600 transition-colors">
+                                                    <span className="font-medium text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                                         {item.task}
                                                     </span>
                                                     <Badge
                                                         variant="outline"
-                                                        className="group-hover:border-indigo-300"
+                                                        className="group-hover:border-indigo-300 dark:border-gray-600 dark:text-gray-300"
                                                     >
                                                         {item.points} pts
                                                     </Badge>
                                                 </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                                     <div
                                                         className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-1000 ease-out"
                                                         style={{
@@ -329,18 +308,18 @@ const LandingPage = () => {
                                         ))}
                                     </div>
 
-                                    <div className="flex items-center justify-between pt-4 border-t">
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                                         <div className="flex -space-x-2">
                                             {[1, 2, 3, 4].map((i) => (
                                                 <div
                                                     key={i}
-                                                    className={`w-8 h-8 rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 border-2 border-white flex items-center justify-center text-white text-xs font-semibold`}
+                                                    className={`w-8 h-8 rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 border-2 border-white dark:border-gray-800 flex items-center justify-center text-white text-xs font-semibold`}
                                                 >
                                                     {i}
                                                 </div>
                                             ))}
                                         </div>
-                                        <span className="text-sm text-gray-600">
+                                        <span className="text-sm text-gray-600 dark:text-gray-400">
                                             24 members
                                         </span>
                                     </div>
@@ -354,14 +333,14 @@ const LandingPage = () => {
             {/* Features Section */}
             <section
                 id="features"
-                className="py-24 px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50"
+                className="py-24 px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 transition-colors duration-300"
             >
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                        <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                             Powerful Features
                         </h2>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
                             Everything you need to collaborate effectively with
                             your team and boost productivity
                         </p>
@@ -371,7 +350,7 @@ const LandingPage = () => {
                         {features.map((feature, index) => (
                             <Card
                                 key={index}
-                                className="group border-0 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm"
+                                className="group border-0 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
                             >
                                 <CardContent className="p-8 text-center">
                                     <div
@@ -379,10 +358,10 @@ const LandingPage = () => {
                                     >
                                         <feature.icon className="w-8 h-8 text-white" />
                                     </div>
-                                    <h3 className="text-xl font-bold mb-4 group-hover:text-indigo-600 transition-colors">
+                                    <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                         {feature.title}
                                     </h3>
-                                    <p className="text-gray-600 leading-relaxed">
+                                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                                         {feature.description}
                                     </p>
                                 </CardContent>
@@ -393,13 +372,16 @@ const LandingPage = () => {
             </section>
 
             {/* How It Works Section */}
-            <section id="how-it-works" className="py-24 px-6 lg:px-8">
+            <section
+                id="how-it-works"
+                className="py-24 px-6 lg:px-8 bg-white dark:bg-gray-800 transition-colors duration-300"
+            >
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                        <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                             How It Works
                         </h2>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
                             Get started with PaperRoom in three simple steps
                         </p>
                     </div>
@@ -439,10 +421,10 @@ const LandingPage = () => {
                                         <item.icon className="w-4 h-4 text-white" />
                                     </div>
                                 </div>
-                                <h3 className="text-2xl font-bold mb-4 group-hover:text-indigo-600 transition-colors">
+                                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                     {item.title}
                                 </h3>
-                                <p className="text-gray-600 leading-relaxed">
+                                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                                     {item.description}
                                 </p>
                             </div>
@@ -454,14 +436,14 @@ const LandingPage = () => {
             {/* Popular Rooms Section */}
             <section
                 id="rooms"
-                className="py-24 px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white"
+                className="py-24 px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300"
             >
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                        <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                             Popular Rooms
                         </h2>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
                             Discover some of our most active collaboration
                             spaces
                         </p>
@@ -471,7 +453,7 @@ const LandingPage = () => {
                         {rooms.map((room, index) => (
                             <Card
                                 key={index}
-                                className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white"
+                                className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white dark:bg-gray-800"
                             >
                                 <div className={`h-2 ${room.color}`}></div>
                                 <div
@@ -479,7 +461,7 @@ const LandingPage = () => {
                                 ></div>
 
                                 <CardContent className="p-8 relative z-10">
-                                    <h3 className="text-2xl font-bold mb-4 group-hover:text-white transition-colors">
+                                    <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white group-hover:text-white transition-colors">
                                         {room.name}
                                     </h3>
                                     <div className="flex flex-wrap gap-2 mb-6">
@@ -487,23 +469,23 @@ const LandingPage = () => {
                                             <Badge
                                                 key={tagIndex}
                                                 variant="secondary"
-                                                className="group-hover:bg-white/20 group-hover:text-white transition-colors"
+                                                className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 group-hover:bg-white/20 group-hover:text-white transition-colors"
                                             >
                                                 {tag}
                                             </Badge>
                                         ))}
                                     </div>
-                                    <p className="text-gray-600 group-hover:text-white/90 transition-colors leading-relaxed mb-6">
+                                    <p className="text-gray-600 dark:text-gray-300 group-hover:text-white/90 transition-colors leading-relaxed mb-6">
                                         {room.description}
                                     </p>
                                     <div className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                                             <Users className="w-4 h-4" />
                                             <span className="group-hover:text-white transition-colors">
                                                 {room.members} members
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                                             <CheckCircle className="w-4 h-4" />
                                             <span className="group-hover:text-white transition-colors">
                                                 {room.tasks} tasks
@@ -543,21 +525,13 @@ const LandingPage = () => {
                                 Create Account
                                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                             </Button>
-                            {/* <Button
-                                size="lg"
-                                variant="outline"
-                                className="group border-2 border-white text-white hover:bg-white/10 transition-all duration-300"
-                            >
-                                Try Demo
-                                <Sparkles className="ml-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
-                            </Button> */}
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Enhanced Footer */}
-            <footer className="bg-gray-900 text-white py-16 px-6 lg:px-8">
+            <footer className="bg-gray-900 dark:bg-black text-white py-16 px-6 lg:px-8 transition-colors duration-300">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid md:grid-cols-4 gap-12 mb-12">
                         <div className="space-y-6">
@@ -571,18 +545,18 @@ const LandingPage = () => {
                                     PaperRoom
                                 </span>
                             </div>
-                            <p className="text-gray-400 leading-relaxed">
+                            <p className="text-gray-400 dark:text-gray-500 leading-relaxed">
                                 A collaborative task management platform for
                                 teams with shared interests.
                             </p>
                             <div className="flex gap-4">
-                                <div className="w-10 h-10 bg-gray-800 hover:bg-indigo-600 rounded-lg flex items-center justify-center cursor-pointer transition-colors">
+                                <div className="w-10 h-10 bg-gray-800 dark:bg-gray-900 hover:bg-indigo-600 rounded-lg flex items-center justify-center cursor-pointer transition-colors">
                                     <Twitter className="w-5 h-5" />
                                 </div>
-                                <div className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center justify-center cursor-pointer transition-colors">
+                                <div className="w-10 h-10 bg-gray-800 dark:bg-gray-900 hover:bg-gray-700 dark:hover:bg-gray-800 rounded-lg flex items-center justify-center cursor-pointer transition-colors">
                                     <Github className="w-5 h-5" />
                                 </div>
-                                <div className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center cursor-pointer transition-colors">
+                                <div className="w-10 h-10 bg-gray-800 dark:bg-gray-900 hover:bg-blue-600 rounded-lg flex items-center justify-center cursor-pointer transition-colors">
                                     <Linkedin className="w-5 h-5" />
                                 </div>
                             </div>
@@ -621,7 +595,7 @@ const LandingPage = () => {
                                         <li key={linkIndex}>
                                             <a
                                                 href="#"
-                                                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
+                                                className="text-gray-400 dark:text-gray-500 hover:text-white transition-colors cursor-pointer"
                                             >
                                                 {link}
                                             </a>
@@ -632,12 +606,12 @@ const LandingPage = () => {
                         ))}
                     </div>
 
-                    <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-                        <p className="text-gray-400 text-sm">
+                    <div className="border-t border-gray-800 dark:border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center">
+                        <p className="text-gray-400 dark:text-gray-500 text-sm">
                             © 2025 PaperRoom. All rights reserved.
                         </p>
                         <div className="flex items-center gap-6 mt-4 md:mt-0">
-                            <span className="text-sm text-gray-400">
+                            <span className="text-sm text-gray-400 dark:text-gray-500">
                                 Made with ❤️ for teams
                             </span>
                         </div>
