@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useAuthStore } from "@/stores/auth-store";
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
+
+    const { user } = useAuthStore();
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
@@ -105,10 +108,10 @@ const Sidebar = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                                User Name
+                                {user?.username || "Guest User"}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                user@example.com
+                                {user?.email || "No email"}
                             </p>
                         </div>
                     </div>
