@@ -1,14 +1,16 @@
-export const validate = (schema) => (req, res, next) => {
-  try {
-    req.body = schema.parse(req.body);
-    next();
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      errors: error.errors.map((err) => ({
-        field: err.path[0],
-        message: err.message,
-      })),
-    });
-  }
-};
+export const validate =
+    (schema, source = "body") =>
+    (req, res, next) => {
+        try {
+            req[source] = schema.parse(req[source]);
+            next();
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                errors: error.errors.map((err) => ({
+                    field: err.path.join("."),
+                    message: err.message,
+                })),
+            });
+        }
+    };
