@@ -25,8 +25,6 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     }
 
     req.user = user;
-    req.userId = user._id;
-    console.log("User data ", user);
 
     next();
 });

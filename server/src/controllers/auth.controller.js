@@ -89,7 +89,7 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-    const { userId } = req.body;
+    const userId = req.user._id
 
     if (!userId) {
         throw new APIerror(400, "User ID is required");

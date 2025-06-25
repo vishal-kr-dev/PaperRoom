@@ -4,16 +4,21 @@ import {
     loginUser,
     logoutUser,
     registerUser,
-    getMe
+    getMe,
 } from "../controllers/auth.controller.js";
-import { loginUserSchema, registerUserSchema } from "../validators/user.validator.js";
+import { loginUserSchema, registerUserSchema } from "../schemas/user.schema.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.route("/signup").post(validate(registerUserSchema), registerUser);
-router.route("/login").post(validate(loginUserSchema), loginUser);
-router.route("/logout").post(logoutUser);
+router
+    .route("/signup")
+    .post(validate(registerUserSchema, "body"), registerUser);
+
+router.route("/login").post(validate(loginUserSchema, "body"), loginUser);
+
+router.route("/logout").post(verifyJWT, logoutUser);
+
 // router.post("/forgot-password", );
 // router.post("/reset-password", );
 
