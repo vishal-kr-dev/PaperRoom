@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { ArrowRight, Menu, X, LogOut, User, Sun, Moon } from "lucide-react";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore } from "@/stores/authStore";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 

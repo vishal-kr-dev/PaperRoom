@@ -3,7 +3,7 @@ import axios, {
     AxiosError,
     InternalAxiosRequestConfig,
 } from "axios";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore } from "@/stores/authStore";
 
 interface ApiSuccessResponse<T = any> {
     success: true;
@@ -73,8 +73,8 @@ axiosInstance.interceptors.response.use(
             switch (status) {
                 case 401:
                     useAuthStore.getState().logout(true);
-                    
-                    if(window.location.pathname !== "/login"){
+
+                    if (window.location.pathname !== "/login") {
                         window.location.href = "/login";
                     }
 

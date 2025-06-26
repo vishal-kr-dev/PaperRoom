@@ -67,7 +67,7 @@ const joinRoom = asyncHandler(async (req, res) => {
     }
 
     if (room.members.includes(userId)) {
-        return sendResponse(res, 200, { roomCode }, "Already in room");
+        return sendResponse(res, 200, { roomCode }, "Already in the room");
     }
 
     if (room.members.length >= room.maxMembers) {

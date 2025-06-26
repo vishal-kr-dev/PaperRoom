@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,11 @@ export default function LoginPage() {
             if (response.status === 200) {
                 setUser(response.data.data);
                 toast.success("Logged in successfully!");
-                router.push("/dashboard");
+                if(response.data.data.roomId){
+                    router.push("/dashboard")
+                }else{
+                    router.push("/join")
+                }
                 return;
             }
         } catch (err: any) {

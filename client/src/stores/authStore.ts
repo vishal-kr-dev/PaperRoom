@@ -6,6 +6,7 @@ interface User {
     username: string;
     email: string;
     avatar?: string;
+    roomId: string;
 }
 
 interface AuthState {

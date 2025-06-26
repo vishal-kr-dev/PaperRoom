@@ -83,6 +83,7 @@ const loginUser = asyncHandler(async (req, res) => {
         username: user.username,
         email: user.email,
         avatar: user.avatar,
+        roomId: user.roomId
     };
 
     return sendResponse(res, 200, publicUser, "User logged in successfully");
