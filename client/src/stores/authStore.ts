@@ -1,49 +1,59 @@
+// store/authStore.ts
 import { create } from "zustand";
-import axiosInstance from "@/utils/axiosInstance";
+import { persist } from "zustand/middleware";
 
 interface User {
     id: string;
     username: string;
     email: string;
-    avatar?: string;
+    avatar: string;
     roomId: string;
 }
 
-interface AuthState {
+interface AuthStore {
     user: User | null;
     isAuthenticated: boolean;
-    setUser: (user: User) => void;
-    logout: (skipApiCall?: boolean) => Promise<void>;
-    checkAuth: () => Promise<void>;
+    isLoading: boolean;
+    isInitialized: boolean;
+    setUser: (user: User | null) => void;
+    setLoading: (loading: boolean) => void;
+    setInitialized: (initialized: boolean) => void;
+    logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-    user: null,
-    isAuthenticated: false,
+export const useAuthStore = create<AuthStore>()(
+    persist(
+        (set) => ({
+            user: null,
+            isAuthenticated: false,
+            isLoading: true,
+            isInitialized: false,
 
-    setUser: (user) => {
-        set({ user, isAuthenticated: true });
-    },
+            setUser: (user) =>
+                set({
+                    user,
+                    isAuthenticated: !!user,
+                    isLoading: false,
+                }),
 
-    logout: async (skipApiCall = false) => {
-        if (!skipApiCall) {
-            try {
-                await axiosInstance.post("/auth/logout");
-            } catch (err) {
-                console.error("Logout failed:", err);
-            }
+            setLoading: (loading) => set({ isLoading: loading }),
+
+            setInitialized: (initialized) =>
+                set({ isInitialized: initialized }),
+
+            logout: () =>
+                set({
+                    user: null,
+                    isAuthenticated: false,
+                    isLoading: false,
+                }),
+        }),
+        {
+            name: "auth-storage",
+            partialize: (state) => ({
+                user: state.user,
+                isAuthenticated: state.isAuthenticated,
+            }),
         }
-        set({ user: null, isAuthenticated: false });
-    },
-
-    checkAuth: async () => {
-        try {
-            const res = await axiosInstance.get("/auth/me");
-            console.log("User data", res)
-            const user = res.data.data;
-            set({ user, isAuthenticated: true });
-        } catch (err) {
-            set({ user: null, isAuthenticated: false });
-        }
-    },
-}));
+    )
+);

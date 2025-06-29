@@ -5,6 +5,8 @@ import { ArrowRight, Menu, X, LogOut, User, Sun, Moon } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "./ui/button";
+import { Avatar, AvatarImage } from "./ui/avatar";
+import Image from "next/image";
 
 const Navbar = () => {
     const pathname = usePathname();
@@ -84,15 +86,16 @@ const Navbar = () => {
                 <div className="flex items-center justify-between h-16 lg:h-20">
                     {/* Logo - Always visible and clickable */}
                     <div
-                        className="flex items-center gap-3 cursor-pointer"
+                        className="flex items-center cursor-pointer"
                         onClick={handleLogoClick}
                     >
-                        <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                        {/* <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
                             <span className="text-lg font-bold text-white">
                                 PR
                             </span>
-                        </div>
-                        <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        </div> */}
+                        <Image src="/pr.png" width={60} height={60} alt="PR" />
+                        <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                             PaperRoom
                         </span>
                     </div>
@@ -130,7 +133,7 @@ const Navbar = () => {
                         </Button>
 
                         {/* Auth Buttons - Show for non-auth pages when not authenticated */}
-                        {!isAuthPage && !isAuthenticated && (
+                        {pathname === "/home" && (
                             <>
                                 <Button
                                     variant="ghost"
@@ -152,12 +155,12 @@ const Navbar = () => {
                         {/* User Menu - Show when authenticated */}
                         {!isAuthPage && isAuthenticated && (
                             <div className="flex items-center space-x-3">
-                                <div className="text-sm text-gray-700 dark:text-gray-300">
-                                    Welcome,{" "}
-                                    <span className="font-medium">
-                                        {user?.username || "User"}
-                                    </span>
-                                </div>
+                                <Avatar>
+                                    <AvatarImage
+                                        src={user?.avatar}
+                                        alt={user?.username}
+                                    />
+                                </Avatar>
                                 <Button
                                     variant="ghost"
                                     size="sm"

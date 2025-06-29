@@ -74,8 +74,11 @@ axiosInstance.interceptors.response.use(
                 case 401:
                     useAuthStore.getState().logout(true);
 
-                    if (window.location.pathname !== "/login") {
-                        window.location.href = "/login";
+                    if (
+                        typeof window !== "undefined" &&
+                        window.location.pathname !== "/"
+                    ) {
+                        window.location.href = "/";
                     }
 
                     break;

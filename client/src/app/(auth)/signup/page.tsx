@@ -2,17 +2,32 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { authService } from "@/services/authService"; // Import your authService
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import axiosInstance from "@/utils/axiosInstance";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
 export default function SignupPage() {
+    const { shouldShowLoader, shouldShowContent } = useAuthRedirect();
+
+    if (shouldShowLoader) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <LoadingSpinner />
+            </div>
+        );
+    }
+    if (!shouldShowContent) {
+        return null;
+    }
+
     const router = useRouter();
 
     const [name, setName] = useState("");
@@ -44,17 +59,16 @@ export default function SignupPage() {
 
         setLoading(true);
         try {
-            const response = await axiosInstance.post("/auth/signup", {
+            // Use authService instead of direct API call
+            await authService.signup({
                 username: name,
                 email,
                 password,
             });
 
-            if (response.status === 201) {
-                toast.success("Account created! Please login.");
-                router.push("/login");
-            }
-        } catch {
+            toast.success("Account created! Please login.");
+            router.push("/login");
+        } catch (error) {
             toast.error("Signup failed");
         } finally {
             setLoading(false);
@@ -225,11 +239,6 @@ export default function SignupPage() {
                         </p>
                     </div>
                 </div>
-
-                {/* Decorative elements */}
-                {/* <div className="absolute -top-4 -right-4 w-8 h-8 bg-indigo-500 rounded-full opacity-60 animate-bounce"></div>
-        <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-purple-500 rounded-full opacity-60 animate-bounce animation-delay-1000"></div>
-        <div className="absolute top-1/2 -right-8 w-4 h-4 bg-pink-500 rounded-full opacity-40 animate-pulse"></div> */}
             </div>
         </div>
     );

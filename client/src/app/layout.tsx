@@ -1,11 +1,13 @@
 // app/layout.tsx
+"use client";
+import { useEffect } from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-import Navbar from "@/components/Navbar";
+import { useAuthStore } from "@/stores/authStore";
+import { checkAuthStatus } from "@/lib/authCheck";
 
-// Fonts with recommended options
 const geistSans = Geist({
     variable: "--font-geist-sans",
     subsets: ["latin"],
@@ -18,17 +20,27 @@ const geistMono = Geist_Mono({
     display: "swap",
 });
 
-export const metadata: Metadata = {
-    title: "PaperRoom",
-    description:
-        "A collaborative space where teams can organize tasks based on shared interests and goals.",
-};
-
 export default function RootLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    const { isInitialized, setInitialized, setLoading } = useAuthStore();
+
+    useEffect(() => {
+        // Only check once when app initializes
+        if (!isInitialized) {
+            const initAuth = async () => {
+                setLoading(true);
+                await checkAuthStatus();
+                setInitialized(true);
+                setLoading(false);
+            };
+
+            initAuth();
+        }
+    }, [isInitialized, setInitialized, setLoading]);
+
     return (
         <html
             lang="en"

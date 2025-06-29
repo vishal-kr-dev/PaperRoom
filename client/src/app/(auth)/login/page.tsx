@@ -3,19 +3,33 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
+import { authService } from "@/services/authService"; // Import your authService
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import axiosInstance from "@/utils/axiosInstance";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
 export default function LoginPage() {
+    const { shouldShowLoader, shouldShowContent } = useAuthRedirect();
+
+    if (shouldShowLoader) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <LoadingSpinner />
+            </div>
+        );
+    }
+    if (!shouldShowContent) {
+        return null;
+    }
+
     const router = useRouter();
-    const { setUser } = useAuthStore();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -34,20 +48,16 @@ export default function LoginPage() {
 
         setLoading(true);
         try {
-            const response = await axiosInstance.post("/auth/login", {
-                email,
-                password,
-            });
+            // Use authService instead of direct API call
+            const user = await authService.login({ email, password });
 
-            if (response.status === 200) {
-                setUser(response.data.data);
-                toast.success("Logged in successfully!");
-                if(response.data.data.roomId){
-                    router.push("/dashboard")
-                }else{
-                    router.push("/join")
-                }
-                return;
+            toast.success("Logged in successfully!");
+
+            // Navigate based on user's roomId
+            if (user.roomId) {
+                router.push("/dashboard");
+            } else {
+                router.push("/join");
             }
         } catch (err: any) {
             if (
@@ -155,10 +165,6 @@ export default function LoginPage() {
                         </p>
                     </div>
                 </div>
-
-                {/* Decorative elements */}
-                {/* <div className="absolute -top-4 -right-4 w-8 h-8 bg-purple-500 rounded-full opacity-60 animate-bounce"></div>
-        <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-pink-500 rounded-full opacity-60 animate-bounce animation-delay-1000"></div> */}
             </div>
         </div>
     );
