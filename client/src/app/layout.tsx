@@ -1,12 +1,12 @@
-// app/layout.tsx
 "use client";
+
 import { useEffect } from "react";
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { checkAuthStatus } from "@/lib/authCheck";
+import { useUIStore } from "@/stores/uiStore";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -25,10 +25,10 @@ export default function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
+    // Credentials check on page load
     const { isInitialized, setInitialized, setLoading } = useAuthStore();
 
     useEffect(() => {
-        // Only check once when app initializes
         if (!isInitialized) {
             const initAuth = async () => {
                 setLoading(true);
@@ -41,6 +41,17 @@ export default function RootLayout({
         }
     }, [isInitialized, setInitialized, setLoading]);
 
+    // Adding theme
+    const theme = useUIStore((state) => state.theme);
+
+    useEffect(() => {
+        if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+    }, [theme]);
+
     return (
         <html
             lang="en"
@@ -48,7 +59,7 @@ export default function RootLayout({
         >
             <body className="antialiased min-h-screen bg-background text-foreground">
                 <Toaster richColors position="top-center" />
-                {children}
+                <main>{children}</main>
             </body>
         </html>
     );

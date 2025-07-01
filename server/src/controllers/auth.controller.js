@@ -90,24 +90,10 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-    const userId = req.user._id
-
-    if (!userId) {
-        throw new APIerror(400, "User ID is required");
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new APIerror(404, "User not found");
-    }
-
-    user.refreshToken = null;
-    await user.save();
-
     res.clearCookie("access_token");
     res.clearCookie("refresh_token");
 
-    return sendResponse(res, 200, {}, "User logged out successfully");
+    return sendResponse(res, 200, {}, "User logged out");
 });
 
 const getMe = asyncHandler(async (req, res) => {

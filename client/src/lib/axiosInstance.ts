@@ -61,6 +61,8 @@ axiosInstance.interceptors.response.use(
         return response;
     },
     (error: AxiosError<ApiErrorResponse>) => {
+        const user = useAuthStore((state)=> state.user)
+        
         if (error.response) {
             const { status, data } = error.response;
 
@@ -70,15 +72,19 @@ axiosInstance.interceptors.response.use(
                 success: data?.success,
             });
 
+
             switch (status) {
                 case 401:
-                    useAuthStore.getState().logout(true);
+                    if(user){
+                        useAuthStore.getState().logout();
+                    }
 
                     if (
                         typeof window !== "undefined" &&
-                        window.location.pathname !== "/"
+                        window.location.pathname !== "/" &&
+                        window.location.pathname !== "/login"
                     ) {
-                        window.location.href = "/";
+                        window.location.href = "/login";
                     }
 
                     break;

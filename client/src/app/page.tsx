@@ -27,8 +27,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
 import Image from "next/image";
+import NavbarLanding from "@/components/NavbarLanding";
 
 const HomePage = () => {
     const router = useRouter();
@@ -153,7 +153,7 @@ const HomePage = () => {
 
     return (
         <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden pt-16 lg:pt-20 transition-colors duration-300">
-            <Navbar />
+            <NavbarLanding />
 
             {/* Cursor follower */}
             <div
@@ -544,8 +544,8 @@ const HomePage = () => {
                                 </div> */}
                                     <Image
                                         src="/pr.png"
-                                        width={60}
-                                        height={60}
+                                        width={40}
+                                        height={40}
                                         alt="PR"
                                     />
                                 <span className="text-2xl font-bold">

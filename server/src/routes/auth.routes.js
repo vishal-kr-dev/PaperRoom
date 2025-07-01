@@ -17,7 +17,7 @@ router
 
 router.route("/login").post(validate(loginUserSchema, "body"), loginUser);
 
-router.route("/logout").post(verifyJWT, logoutUser);
+router.route("/logout").post(logoutUser);
 
 // router.post("/forgot-password", );
 // router.post("/reset-password", );

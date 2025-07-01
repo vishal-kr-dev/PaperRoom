@@ -16,7 +16,11 @@ const isValidEmail = (email: string) => {
 };
 
 export default function LoginPage() {
+    const router = useRouter();
     const { shouldShowLoader, shouldShowContent } = useAuthRedirect();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
 
     if (shouldShowLoader) {
         return (
@@ -28,12 +32,6 @@ export default function LoginPage() {
     if (!shouldShowContent) {
         return null;
     }
-
-    const router = useRouter();
-
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -48,27 +46,17 @@ export default function LoginPage() {
 
         setLoading(true);
         try {
-            // Use authService instead of direct API call
             const user = await authService.login({ email, password });
 
             toast.success("Logged in successfully!");
 
-            // Navigate based on user's roomId
             if (user.roomId) {
                 router.push("/dashboard");
             } else {
                 router.push("/join");
             }
         } catch (err: any) {
-            if (
-                err.response &&
-                err.response.status === 401 &&
-                err.response.data?.message === "Invalid credentials"
-            ) {
-                toast.error("Invalid credentials. Please try again.");
-            } else {
-                toast.error("Login failed");
-            }
+            toast.error("Invalid credentials. Please try again.");
         } finally {
             setLoading(false);
         }

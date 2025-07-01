@@ -1,4 +1,5 @@
 // store/authStore.ts
+import axiosInstance from "@/lib/axiosInstance";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -41,12 +42,18 @@ export const useAuthStore = create<AuthStore>()(
             setInitialized: (initialized) =>
                 set({ isInitialized: initialized }),
 
-            logout: () =>
+            logout: async () => {
+                try{
+                    await axiosInstance.post("/auth/logout")
+                }catch(err){
+                    console.log("Something went wrong while login out: ", err)
+                }
                 set({
                     user: null,
                     isAuthenticated: false,
                     isLoading: false,
-                }),
+                })
+            }
         }),
         {
             name: "auth-storage",
