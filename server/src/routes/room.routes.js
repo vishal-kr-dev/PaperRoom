@@ -1,4 +1,3 @@
-// routes/room.routes.js
 import express from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import {

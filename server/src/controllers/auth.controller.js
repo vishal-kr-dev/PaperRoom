@@ -78,15 +78,7 @@ const loginUser = asyncHandler(async (req, res) => {
         sameSite: "Strict",
     });
 
-    const publicUser = {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-        roomId: user.roomId
-    };
-
-    return sendResponse(res, 200, publicUser, "User logged in successfully");
+    return sendResponse(res, 200, user, "User logged in successfully");
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -103,14 +95,7 @@ const getMe = asyncHandler(async (req, res) => {
         throw new APIerror(404, "User not found");
     }
 
-    const publicUser = {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-    };
-
-    return sendResponse(res, 200, publicUser, "User data retrieved successfully");
+    return sendResponse(res, 200, user, "User data retrieved successfully");
 })
 
 export { registerUser, loginUser, logoutUser, getMe };

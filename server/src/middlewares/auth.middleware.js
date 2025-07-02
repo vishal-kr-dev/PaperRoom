@@ -16,15 +16,26 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
         process.env.ACCESS_TOKEN_SECRET
     );
 
-    const user = await User.findById(decodedInfo._id).select(
-        "-__v -createdAt -updatedAt"
-    );
+    const user = await User.findById(decodedInfo._id)
 
     if (!user) {
         throw new APIerror(401, "Invalid Access Token");
     }
 
-    req.user = user;
+    req.user = {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        roomId: user.roomId,
+        totalXp: user.totalXp,
+        level: user.level,
+        currentStreak: user.currentStreak,
+        streakUpdate: user.streakUpdate,
+        emailVerified: user.emailVerified,
+    };
+
+    console.log(req.user)
 
     next();
 });

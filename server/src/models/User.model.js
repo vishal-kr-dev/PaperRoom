@@ -69,10 +69,12 @@ const userSchema = new Schema(
         passwordResetToken: {
             type: String,
             default: null,
+            select: false,
         },
         passwordResetTokenExpiry: {
             type: Date,
             default: null,
+            select: false,
         },
         emailVerified: {
             type: Boolean,
