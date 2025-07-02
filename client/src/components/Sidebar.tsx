@@ -35,7 +35,7 @@ const Sidebar = () => {
             )}
 
             <aside
-                className={`fixed z-40 top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-xl transform duration-300 ease-in-out transition-all flex flex-col ${
+                className={`fixed z-40 top-16 h-[calc(100vh-4rem)] md:top-20 left-0 md:h-[calc(100vh-5rem)] w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-xl transform duration-300 ease-in-out transition-all flex flex-col ${
                     isSidebarOpen
                         ? "translate-x-0 opacity-100"
                         : "-translate-x-full opacity-0"

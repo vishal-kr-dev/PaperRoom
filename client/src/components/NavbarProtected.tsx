@@ -5,10 +5,13 @@ import Image from "next/image";
 import { useUIStore } from "@/stores/uiStore";
 import { Button } from "./ui/button";
 import { Moon, Sun, Menu, X, Bell } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useAuthStore } from "@/stores/authStore";
 
 const NavbarProtected = () => {
     const router = useRouter();
     const { theme, setTheme, isSidebarOpen, toggleSidebar } = useUIStore();
+    const user = useAuthStore((state) => state.user);
     const isDarkMode = theme === "dark";
 
     return (
@@ -24,15 +27,7 @@ const NavbarProtected = () => {
                     </span>
                 </div>
 
-                <div className="flex items-center space-x-4">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="p-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
-                    >
-                        <Bell className="h-5 w-5" />
-                    </Button>
-
+                <div className="flex items-center sm:space-x-4">
                     <Button
                         variant="ghost"
                         size="sm"
@@ -49,8 +44,16 @@ const NavbarProtected = () => {
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={toggleSidebar}
                         className="p-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                    >
+                        <Bell className="h-5 w-5" />
+                    </Button>
+
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={toggleSidebar}
+                        className="p-2 lg:hidden text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
                     >
                         {isSidebarOpen ? (
                             <X className="h-6 w-6" />
@@ -58,6 +61,17 @@ const NavbarProtected = () => {
                             <Menu className="h-6 w-6" />
                         )}
                     </Button>
+
+                    <Avatar className="w-8 h-8 hidden md:block">
+                        <AvatarImage
+                            src={user?.avatar}
+                            alt={user?.username}
+                            className="object-cover"
+                        />
+                        <AvatarFallback>
+                            {user?.username?.[0]?.toUpperCase() || "G"}
+                        </AvatarFallback>
+                    </Avatar>
                 </div>
             </div>
         </nav>
