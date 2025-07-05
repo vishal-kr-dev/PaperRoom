@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 
 const userSchema = new Schema(
     {
-        // Auth
         email: {
             type: String,
             required: true,
@@ -24,8 +23,6 @@ const userSchema = new Schema(
             required: true,
             select: false,
         },
-
-        // Profile
         avatar: {
             type: String,
             default:
@@ -36,31 +33,6 @@ const userSchema = new Schema(
             ref: "Room",
             default: null,
         },
-
-        // Gamification
-        totalXp: {
-            type: Number,
-            default: 0,
-            min: 0,
-        },
-        level: {
-            type: Number,
-            default: 1,
-            min: 1,
-        },
-
-        // Streaks
-        currentStreak: {
-            type: Number,
-            default: 0,
-            min: 0,
-        },
-        streakUpdate: {
-            type: Date,
-            default: Date.now,
-        },
-
-        // Security
         refreshToken: {
             type: String,
             default: null,
@@ -124,47 +96,6 @@ userSchema.methods.generateRefreshToken = function () {
     return jwt.sign({ _id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
         expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     });
-};
-
-userSchema.methods.addExperience = async function (amount) {
-    this.experience += amount;
-    this.monthlyExperience += amount;
-
-    const getLevelFromXP = (xp) => Math.floor(0.1 * Math.sqrt(xp)) + 1;
-    this.level = getLevelFromXP(this.experience);
-
-    return await this.save();
-};
-
-userSchema.methods.updateStreak = async function () {
-    const today = new Date();
-    const lastUpdate = new Date(this.streakUpdate);
-
-    const todayMidnight = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate()
-    );
-    const lastMidnight = new Date(
-        lastUpdate.getFullYear(),
-        lastUpdate.getMonth(),
-        lastUpdate.getDate()
-    );
-
-    const diffInDays = Math.floor(
-        (todayMidnight - lastMidnight) / (1000 * 60 * 60 * 24)
-    );
-
-    if (diffInDays === 0) {
-        return this;
-    } else if (diffInDays === 1) {
-        this.currentStreak += 1;
-    } else {
-        this.currentStreak = 1;
-    }
-
-    this.streakUpdate = today;
-    return await this.save();
 };
 
 userSchema.index({ roomId: 1 });

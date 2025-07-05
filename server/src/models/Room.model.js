@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { createRoomCode } from "../helper/CreateRoomCode.js";
+import { createRoomCode } from "../utils/room/CreateRoomCode.js";
 
 const roomSchema = new Schema({
     roomCode: {

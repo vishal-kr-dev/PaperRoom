@@ -2,6 +2,8 @@ import { User } from "../models/User.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { APIerror } from "../utils/APIerror.js";
 import { sendResponse } from "../utils/sendResponse.js";
+import { Stats } from "../models/Stats.model.js";
+import mongoose from "mongoose";
 
 const registerUser = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body;
@@ -20,27 +22,36 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new APIerror(409, "Email is already in use");
     }
 
-    const user = new User({
-        email: emailLower,
-        username,
-        password,
-    });
+    console.log("here");
+    const session = await mongoose.startSession();
+    try {
+        const result = await session.withTransaction(async () => {
+            const user = new User({
+                email: emailLower,
+                username,
+                password,
+            });
 
-    await user.save();
+            await user.save({ session });
+            await Stats.create([{ userId: user._id }], { session });
 
-    const publicUser = {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-    };
+            return {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar,
+            };
+        });
 
-    return sendResponse(res, 201, publicUser, "User registered successfully");
+        return sendResponse(res, 201, result, "User registered successfully");
+    } finally {
+        await session.endSession();
+    }
 });
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    
+
     if (!email || !password) {
         throw new APIerror(400, "All required fields must be provided");
     }
@@ -96,6 +107,6 @@ const getMe = asyncHandler(async (req, res) => {
     }
 
     return sendResponse(res, 200, user, "User data retrieved successfully");
-})
+});
 
 export { registerUser, loginUser, logoutUser, getMe };

@@ -24,7 +24,6 @@ export const authService = {
         try {
             const response = await axiosInstance.post("/auth/signup", userData);
             const user = response.data.data;
-            useAuthStore.getState().setUser(user);
             return user;
         } catch (error) {
             throw error;

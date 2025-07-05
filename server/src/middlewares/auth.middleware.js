@@ -27,15 +27,9 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
         username: user.username,
         email: user.email,
         avatar: user.avatar,
-        roomId: user.roomId,
-        totalXp: user.totalXp,
-        level: user.level,
-        currentStreak: user.currentStreak,
-        streakUpdate: user.streakUpdate,
+        room: user.room,
         emailVerified: user.emailVerified,
     };
-
-    console.log(req.user)
 
     next();
 });

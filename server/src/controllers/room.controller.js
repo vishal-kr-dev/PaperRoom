@@ -3,7 +3,7 @@ import { Room } from "../models/Room.model.js";
 import { InviteToken } from "../models/InviteToken.model.js";
 import { sendResponse } from "../utils/sendResponse.js";
 import crypto from "crypto";
-import { createRoomCode } from "../helper/CreateRoomCode.js";
+import { createRoomCode } from "../utils/room/CreateRoomCode.js";
 import { APIerror } from "../utils/APIerror.js";
 
 const getRoomData = asyncHandler(async (req, res) => {

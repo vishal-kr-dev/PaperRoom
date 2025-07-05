@@ -6,7 +6,7 @@ import {
     registerUser,
     getMe,
 } from "../controllers/auth.controller.js";
-import { loginUserSchema, registerUserSchema } from "../schemas/user.schema.js";
+import { loginUserSchema, registerUserSchema } from "../schemas/auth.schema.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
