@@ -5,9 +5,10 @@ import { sendResponse } from "../utils/sendResponse.js";
 import crypto from "crypto";
 import { createRoomCode } from "../utils/room/CreateRoomCode.js";
 import { APIerror } from "../utils/APIerror.js";
+import { User } from "../models/User.model.js";
 
 const getRoomData = asyncHandler(async (req, res) => {
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     const room = await Room.findOne({ members: userId }).populate(
         "members",
@@ -23,9 +24,11 @@ const getRoomData = asyncHandler(async (req, res) => {
 
 const createRoom = asyncHandler(async (req, res) => {
     const { roomName, description, maxMembers, tags, privacy } = req.body;
-    const userId = req.user.id;
+    const user = req.user
 
-    if (req.user?.roomId) {
+    console.log("Room creation request received")
+
+    if (user?.roomId) {
         throw new APIerror(400, "User already belongs to a room");
     }
 
@@ -35,8 +38,8 @@ const createRoom = asyncHandler(async (req, res) => {
         roomName,
         roomCode,
         description,
-        ownerId: userId,
-        members: [userId],
+        ownerId: user._id,
+        members: [user._id],
         maxMembers,
         tags,
         privacy,
@@ -44,9 +47,9 @@ const createRoom = asyncHandler(async (req, res) => {
 
     await newRoom.save();
 
-    req.user.roomId = newRoom._id;
-
-    await req.user.save();
+    await User.findByIdAndUpdate(user._id, {
+        roomId: newRoom._id,
+    });
 
     return sendResponse(res, 201, newRoom, "Room created successfully");
 });
@@ -54,7 +57,7 @@ const createRoom = asyncHandler(async (req, res) => {
 const joinRoom = asyncHandler(async (req, res) => {
     const { roomCode } = req.params;
     const token = req.query.token || "";
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     if (req.user?.roomId) {
         throw new APIerror(400, "User already belongs to a room");
@@ -117,7 +120,7 @@ const joinRoom = asyncHandler(async (req, res) => {
 
 
 const leaveRoom = asyncHandler(async (req, res) => {
-    const userId = req.user.id;
+    const userId = req.user._id;
     const roomId = req.user?.roomId;
 
     if (!roomId) {
@@ -148,7 +151,7 @@ const leaveRoom = asyncHandler(async (req, res) => {
 
 const inviteToRoom = asyncHandler(async (req, res) => {
     const { roomId } = req.query;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     const room = await Room.findById(roomId);
     if (!room) {

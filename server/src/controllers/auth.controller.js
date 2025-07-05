@@ -22,7 +22,6 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new APIerror(409, "Email is already in use");
     }
 
-    console.log("here");
     const session = await mongoose.startSession();
     try {
         const result = await session.withTransaction(async () => {
@@ -89,7 +88,16 @@ const loginUser = asyncHandler(async (req, res) => {
         sameSite: "Strict",
     });
 
-    return sendResponse(res, 200, user, "User logged in successfully");
+    const publicUser = {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        roomId: user.roomId,
+        emailVerified: user.emailVerified,
+    };
+
+    return sendResponse(res, 200, publicUser, "User logged in successfully");
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
