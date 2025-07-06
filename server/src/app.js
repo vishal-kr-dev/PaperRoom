@@ -8,6 +8,7 @@ import { errorHandler } from "./utils/errorHandler.js";
 
 import authRoutes from "./routes/auth.routes.js";
 import roomRouter from "./routes/room.routes.js"
+import tasksRouter from "./routes/task.routes.js";
 
 const app = express();
 
@@ -30,8 +31,10 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
     res.status(200).json({ success: true, message: "Server is healthy" });
 });
+
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/room", roomRouter)
+app.use("/api/v1/tasks", tasksRouter)
 
 // 404 Handler
 app.use((req, res, next) => {
