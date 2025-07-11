@@ -19,22 +19,32 @@ const userActivitySchema = new Schema(
                 "completed",
                 "deleted",
                 "archived",
-                "edited",
+                "updated",
                 "earned_badge",
             ],
             required: true,
         },
         taskId: {
             type: Schema.Types.ObjectId,
-            ref: "Task"
+            ref: "Task",
         },
-        taskTitle: {
-            type: String
-        },
-        xp: {
-            type: Number,
-            default: 0,
-            min: 0,
+        taskSnapshot: {
+            title: {
+                type: String,
+            },
+            tag: {
+                type: String,
+            },
+            priority: {
+                type: String,
+                enum: ["low", "medium", "high", "urgent"],
+            },
+            dailyTask: {
+                type: Boolean,
+            },
+            xp: {
+                type: Number,
+            },
         },
     },
     {
@@ -42,19 +52,8 @@ const userActivitySchema = new Schema(
     }
 );
 
-
-userActivitySchema.index({userId: 1, roomId: 1})
+userActivitySchema.index({ userId: 1, roomId: 1 });
 userActivitySchema.index({ userId: 1, createdAt: -1 });
-userActivitySchema.index({ userId: 1, action: 1 });
-userActivitySchema.index({ roomId: 1, createdAt: -1 });
-userActivitySchema.index({ taskId: 1 });
-
-userActivitySchema.statics.getTotalPointsEarned = function (userId) {
-    return this.aggregate([
-        { $match: { user: userId } },
-        { $group: { _id: null, totalPoints: { $sum: "$pointsEarned" } } },
-    ]);
-};
-
+userActivitySchema.index({ taskId: 1, action: 1 });
 
 export const UserActivity = model("UserActivity", userActivitySchema);

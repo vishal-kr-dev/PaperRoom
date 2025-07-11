@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { MonthlyStats } from "../models/MonthlyStats.model.js";
-import {Task} from "../models/Task.model.js";
+import { Task } from "../models/Task.model.js";
 import { UserActivity } from "../models/UserActivity.model.js";
 import { APIerror } from "../utils/APIerror.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -10,8 +10,10 @@ import { Stats } from "../models/Stats.model.js";
 import { RoomDailyStats } from "../models/RoomDailyStats.js";
 import { Room } from "../models/Room.model.js";
 import { DailyStats } from "../models/DailyStats.model.js";
+import { User } from "../models/User.model.js";
 
 const createNewTask = asyncHandler(async (req, res) => {
+    console.log("Creating...", req.body);
     const { title, description, subtasks, tag, priority, dailyTask, deadline } =
         req.body;
     const user = req.user;
@@ -25,9 +27,9 @@ const createNewTask = asyncHandler(async (req, res) => {
         dailyTask,
         deadline,
     });
-    
+
     const session = await mongoose.startSession();
-    
+
     try {
         const result = await session.withTransaction(async () => {
             const task = new Task({
@@ -50,8 +52,13 @@ const createNewTask = asyncHandler(async (req, res) => {
                 roomId: user.roomId,
                 action: "created",
                 taskId: task._id,
-                xp,
-                taskTittle: task.title
+                taskSnapshot: {
+                    title: task.title,
+                    tag: task.tag,
+                    priority: task.priority,
+                    dailyTask: task.dailyTask,
+                    xp: task.xp,
+                },
             });
 
             await newActivity.save({ session });
@@ -68,27 +75,32 @@ const createNewTask = asyncHandler(async (req, res) => {
 });
 
 const getAllTasks = asyncHandler(async (req, res) => {
-    const user = req.user
+    const roomId = req.user.roomId;
+    const userId = req.user._id.toString();
 
     const tasks = await Task.find({
-        roomId: req.user.roomId,
+        roomId,
         isDeleted: false,
-    });
+    })
+        .select("-roomId -isDeleted -deletedAt -__v")
+        .lean();
 
-    const categorizedTasks = {
-        all: tasks,
-        inProgress: tasks.filter((task) => !task.completedBy.includes(user._id)),
-        completed: tasks.filter((task) => task.completedBy.includes(user._id)),
-        daily: tasks.filter((task) => task.dailyTask === true),
-        urgent: tasks.filter(
-            (task) => task.priority === "urgent" || task.isUrgent
-        ),
-    };
+    const transformedTasks = tasks.map((task) => {
+        const isCompleted = task.completedBy.some(
+            (id) => id.toString() === userId
+        );
+
+        return {
+            ...task,
+            id: task._id.toString(),
+            isCompleted,
+        };
+    });
 
     return sendResponse(
         res,
         200,
-        categorizedTasks,
+        transformedTasks,
         "Tasks fetched successfully"
     );
 });
@@ -141,10 +153,12 @@ const updateTask = asyncHandler(async (req, res) => {
                 roomId: user.roomId,
                 taskId: updatedTask._id,
                 action: "updated",
-                xp: 0,
                 taskSnapshot: {
                     title: updatedTask.title,
-                    difficulty: updatedTask.difficulty,
+                    tag: updatedTask.tag,
+                    priority: updatedTask.priority,
+                    dailyTask: updatedTask.dailyTask,
+                    xp: updatedTask.xp,
                 },
             });
 
@@ -173,6 +187,38 @@ const deleteTask = asyncHandler(async (req, res) => {
 
     try {
         const result = await session.withTransaction(async () => {
+            const task = await Task.findOne({
+                _id: id,
+                roomId: user.roomId,
+                isDeleted: false,
+            }).session(session);
+
+            if (!task) {
+                throw new APIerror(404, "Task not found");
+            }
+
+            const roomUsers = await User.find({
+                roomId: user.roomId,
+            }).session(session);
+
+            if (roomUsers.length === 0) {
+                throw new APIerror(400, "No users found in the room");
+            }
+
+            const completedUsers = task.completedBy.length;
+            const totalUsers = roomUsers.length;
+
+            const canDelete =
+                completedUsers === 0 || completedUsers === totalUsers;
+
+            if (!canDelete) {
+                throw new APIerror(
+                    400,
+                    `Cannot delete task. ${completedUsers} out of ${totalUsers} users have completed this task. ` +
+                        "Deletion is only allowed when no one has completed the task or when everyone has completed it."
+                );
+            }
+
             const deletedTask = await Task.findOneAndUpdate(
                 {
                     _id: id,
@@ -193,16 +239,17 @@ const deleteTask = asyncHandler(async (req, res) => {
                 throw new APIerror(404, "Task not found");
             }
 
-            // Create activity record for task deletion
             const newActivity = new UserActivity({
                 userId: user._id,
                 roomId: user.roomId,
                 taskId: deletedTask._id,
                 action: "deleted",
-                xp: 0,
                 taskSnapshot: {
                     title: deletedTask.title,
-                    difficulty: deletedTask.difficulty,
+                    tag: deletedTask.tag,
+                    priority: deletedTask.priority,
+                    dailyTask: deletedTask.dailyTask,
+                    xp: deletedTask.xp,
                 },
             });
 
@@ -331,8 +378,13 @@ const markComplete = asyncHandler(async (req, res) => {
                     roomId: user.roomId,
                     taskId: completedTask._id,
                     action: "completed",
-                    xp: completedTask.xp || 100,
-                    taskTitle: completedTask.title,
+                    taskSnapshot: {
+                        title: completedTask.title,
+                        tag: completedTask.tag,
+                        priority: completedTask.priority,
+                        dailyTask: completedTask.dailyTask,
+                        xp: completedTask.xp,
+                    },
                 }).save({ session }),
 
                 // Daily stats add/update
