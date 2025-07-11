@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Card,
     CardContent,
@@ -27,17 +27,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-    Hash,
-    Plus,
-    Settings,
-    Lock,
-    Globe,
-} from "lucide-react";
+import { Hash, Plus, Settings, Lock, Globe } from "lucide-react";
 import axiosInstance, { createApiError } from "@/lib/axiosInstance";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
+import NavbarAuth from "@/components/NavbarAuth";
+import { useAuthStore } from "@/stores/authStore";
 
 interface JoinRoomForm {
     roomCode: string;
@@ -47,7 +43,7 @@ interface CreateRoomForm {
     roomName: string;
     description: string;
     privacy: "public" | "private";
-    maxMembers: string;
+    maxMembers: number;
     tags: string[];
 }
 
@@ -61,6 +57,8 @@ const RoomDiscoveryPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const router = useRouter();
+    const user = useAuthStore((state) => state.user);
+    const setUser = useAuthStore((state) => state.setUser);
 
     // Join room
     const [joinForm, setJoinForm] = useState<JoinRoomForm>({
@@ -73,7 +71,7 @@ const RoomDiscoveryPage: React.FC = () => {
         roomName: "",
         description: "",
         privacy: "public",
-        maxMembers: "5",
+        maxMembers: 5,
         tags: [],
     });
     const [createErrors, setCreateErrors] = useState<FormErrors>({});
@@ -108,12 +106,14 @@ const RoomDiscoveryPage: React.FC = () => {
                 `/room/${joinForm.roomCode}/join`
             );
 
-            toast.success("Joined room successfully!");
-            router.push("/dashboard");
+            if (response.status === 200) {
+                toast.success("Joined room successfully!");
+                router.push("/dashboard");
 
-            setIsJoining(false);
-            setJoinForm({ roomCode: "" });
-            setJoinErrors({});
+                setIsJoining(false);
+                setJoinForm({ roomCode: "" });
+                setJoinErrors({});
+            }
         } catch (error) {
             if (error instanceof AxiosError) {
                 const apiError = createApiError(error);
@@ -131,22 +131,42 @@ const RoomDiscoveryPage: React.FC = () => {
         setCreateErrors(errors);
 
         if (Object.keys(errors).length > 0) return;
-
         setIsCreating(true);
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        setIsCreating(false);
-        setIsModalOpen(false);
 
-        console.log("Creating new room with data:", createForm);
-        setCreateForm({
-            roomName: "",
-            description: "",
-            privacy: "public",
-            maxMembers: "10",
-            tags: [],
-        });
-        setCreateErrors({});
+        try {
+            const response = await axiosInstance.post(
+                "/room/create",
+                createForm
+            );
+
+            if (response.status === 201) {
+                toast.success("Room created successfully");
+                router.push("/dashboard")
+                if(user){
+                    setUser({ ...user, roomId: response.data.data._id });
+                }
+                setCreateForm({
+                    roomName: "",
+                    description: "",
+                    privacy: "public",
+                    maxMembers: 5,
+                    tags: [],
+                });
+                setCreateErrors({});
+            }
+        } catch (error) {
+            console.log(error)
+            let errorMessage = "Failed to create room!";
+            if (error instanceof AxiosError && error.response?.status === 400) {
+                errorMessage = "User is already in a room";
+                router.push("/login")
+            }
+
+            toast.error(errorMessage);
+        } finally {
+            setIsCreating(false);
+            setIsModalOpen(false);
+        }
     };
 
     const updateJoinForm = (field: keyof JoinRoomForm, value: string) => {
@@ -167,6 +187,7 @@ const RoomDiscoveryPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-blue-950 dark:to-indigo-950 pt-16 lg:pt-20 transition-colors duration-300">
+            <NavbarAuth />
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header Section */}
                 <div className="text-center mb-12 pt-8">
@@ -360,37 +381,67 @@ const RoomDiscoveryPage: React.FC = () => {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    Tags *
-                                                    <span className=" text-gray-500 dark:text-gray-400">
-                                                        (comma-separated and
-                                                        must be 5)
-                                                    </span>
-                                                </Label>
-                                                <Input
-                                                    type="text"
-                                                    placeholder=" design, marketing, fitness, academics, productivity"
-                                                    value={createForm.tags.join(
-                                                        ", "
-                                                    )}
-                                                    onChange={(e) =>
-                                                        updateCreateForm(
-                                                            "tags",
-                                                            e.target.value
-                                                                .split(",")
-                                                                .map((tag) =>
-                                                                    tag.trim()
-                                                                )
-                                                                .filter(
-                                                                    (tag) =>
-                                                                        tag.trim()
-                                                                            .length >
-                                                                        0
-                                                                )
-                                                        )
-                                                    }
-                                                    className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                />
+                                                <div className="space-y-2">
+                                                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        Tags *
+                                                        <span className=" text-gray-500 dark:text-gray-400">
+                                                            (one per field,
+                                                            total 5)
+                                                        </span>
+                                                    </Label>
+                                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+                                                        {[0, 1, 2, 3, 4].map(
+                                                            (idx) => (
+                                                                <Input
+                                                                    key={idx}
+                                                                    type="text"
+                                                                    placeholder={`Tag ${
+                                                                        idx + 1
+                                                                    }`}
+                                                                    value={
+                                                                        createForm
+                                                                            .tags[
+                                                                            idx
+                                                                        ] || ""
+                                                                    }
+                                                                    onChange={(
+                                                                        e
+                                                                    ) => {
+                                                                        const newTags =
+                                                                            [
+                                                                                ...createForm.tags,
+                                                                            ];
+                                                                        newTags[
+                                                                            idx
+                                                                        ] =
+                                                                            e.target.value;
+                                                                        updateCreateForm(
+                                                                            "tags",
+                                                                            newTags
+                                                                                .map(
+                                                                                    (
+                                                                                        tag
+                                                                                    ) =>
+                                                                                        tag.trim()
+                                                                                )
+                                                                                .filter(
+                                                                                    (
+                                                                                        tag
+                                                                                    ) =>
+                                                                                        tag.length >
+                                                                                        0
+                                                                                )
+                                                                        );
+                                                                    }}
+                                                                    className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                                    maxLength={
+                                                                        20
+                                                                    }
+                                                                />
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -458,14 +509,14 @@ const RoomDiscoveryPage: React.FC = () => {
                                                     </Label>
                                                     <Select
                                                         value={
-                                                            createForm.maxMembers
+                                                            String(createForm.maxMembers)
                                                         }
                                                         onValueChange={(
                                                             value
                                                         ) =>
                                                             updateCreateForm(
                                                                 "maxMembers",
-                                                                value
+                                                                Number(value)
                                                             )
                                                         }
                                                     >

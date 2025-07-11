@@ -4,9 +4,11 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import Sidebar from "@/components/Sidebar";
 import NavbarProtected from "@/components/NavbarProtected";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, isLoading, isInitialized } = useAuthStore();
+    const user = useAuthStore(state => state.user)
     const router = useRouter();
 
     useEffect(() => {
@@ -15,11 +17,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         }
     }, [isAuthenticated, isInitialized, router]);
 
+    useEffect(() => {
+        if (user && !user.roomId) {
+            router.push("/join");
+        }
+    }, [user?.roomId]);
+
     if (!isInitialized || isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
+            <LoadingSpinner />
         );
     }
 

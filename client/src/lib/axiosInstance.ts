@@ -61,8 +61,8 @@ axiosInstance.interceptors.response.use(
         return response;
     },
     (error: AxiosError<ApiErrorResponse>) => {
-        const user = useAuthStore((state)=> state.user)
-        
+        const user = useAuthStore.getState().user;
+
         if (error.response) {
             const { status, data } = error.response;
 
@@ -72,10 +72,9 @@ axiosInstance.interceptors.response.use(
                 success: data?.success,
             });
 
-
             switch (status) {
                 case 401:
-                    if(user){
+                    if (user) {
                         useAuthStore.getState().logout();
                     }
 

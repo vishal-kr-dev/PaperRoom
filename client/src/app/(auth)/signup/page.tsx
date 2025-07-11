@@ -17,6 +17,14 @@ const isValidEmail = (email: string) => {
 export default function SignupPage() {
     const { shouldShowLoader, shouldShowContent } = useAuthRedirect();
 
+    const router = useRouter();
+
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirm, setConfirm] = useState("");
+    const [loading, setLoading] = useState(false);
+
     if (shouldShowLoader) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -27,14 +35,6 @@ export default function SignupPage() {
     if (!shouldShowContent) {
         return null;
     }
-
-    const router = useRouter();
-
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirm, setConfirm] = useState("");
-    const [loading, setLoading] = useState(false);
 
     const handleSignup = async () => {
         if (!name || !email || !password || !confirm) {
@@ -59,8 +59,7 @@ export default function SignupPage() {
 
         setLoading(true);
         try {
-            // Use authService instead of direct API call
-            await authService.signup({
+            const response = await authService.signup({
                 username: name,
                 email,
                 password,
@@ -68,8 +67,15 @@ export default function SignupPage() {
 
             toast.success("Account created! Please login.");
             router.push("/login");
-        } catch (error) {
-            toast.error("Signup failed");
+        } catch (error: any) {
+            console.log("Error details:", error);
+
+            const errorMessage =
+                error.response?.data?.message ||
+                error.message ||
+                "Signup failed";
+
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
