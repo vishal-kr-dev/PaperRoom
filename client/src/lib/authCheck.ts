@@ -6,7 +6,7 @@ export const checkAuthStatus = async () => {
 
     try {
         const response = await axiosInstance.get("/auth/me");
-        console.log("User data", response);
+        console.log("Auth check done");
         const user = response.data.data;
         setUser(user);
         return { isAuthenticated: true, user };

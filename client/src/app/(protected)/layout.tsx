@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 import Sidebar from "@/components/Sidebar";
 import NavbarProtected from "@/components/NavbarProtected";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import AppInitializer from "@/components/AppInitializer";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, isLoading, isInitialized } = useAuthStore();
@@ -38,6 +39,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <NavbarProtected />
             <div className="flex">
                 <Sidebar />
+                <AppInitializer />
                 <main className="flex-1 lg:ml-64 pt-20 p-6 min-h-screen overflow-auto bg-gray-50 dark:bg-gray-900">
                     {children}
                 </main>

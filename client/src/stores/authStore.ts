@@ -2,14 +2,7 @@
 import axiosInstance from "@/lib/axiosInstance";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-interface User {
-    id: string;
-    username: string;
-    email: string;
-    avatar: string;
-    roomId: string;
-}
+import { User } from "@/types/user";
 
 interface AuthStore {
     user: User | null;
@@ -43,17 +36,17 @@ export const useAuthStore = create<AuthStore>()(
                 set({ isInitialized: initialized }),
 
             logout: async () => {
-                try{
-                    await axiosInstance.post("/auth/logout")
-                }catch(err){
-                    console.log("Something went wrong while login out: ", err)
+                try {
+                    await axiosInstance.post("/auth/logout");
+                } catch (err) {
+                    console.log("Something went wrong while login out: ", err);
                 }
                 set({
                     user: null,
                     isAuthenticated: false,
                     isLoading: false,
-                })
-            }
+                });
+            },
         }),
         {
             name: "auth-storage",
