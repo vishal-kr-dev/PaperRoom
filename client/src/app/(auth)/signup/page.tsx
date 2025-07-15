@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authService } from "@/services/authService"; // Import your authService
+import { authService } from "@/services/authService"; 
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { extractErrorMessage } from "@/utils/errorUtils";
 
 const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -59,7 +60,7 @@ export default function SignupPage() {
 
         setLoading(true);
         try {
-            const response = await authService.signup({
+            await authService.signup({
                 username: name,
                 email,
                 password,
@@ -67,15 +68,10 @@ export default function SignupPage() {
 
             toast.success("Account created! Please login.");
             router.push("/login");
-        } catch (error: any) {
-            console.log("Error details:", error);
+        } catch (error: unknown) {
+            console.error("Error details:", error);
 
-            const errorMessage =
-                error.response?.data?.message ||
-                error.message ||
-                "Signup failed";
-
-            toast.error(errorMessage);
+            toast.error(extractErrorMessage(error));
         } finally {
             setLoading(false);
         }

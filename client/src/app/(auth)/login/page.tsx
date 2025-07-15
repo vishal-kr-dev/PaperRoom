@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/authStore";
-import { authService } from "@/services/authService"; // Import your authService
+import { authService } from "@/services/authService"; 
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -50,13 +49,14 @@ export default function LoginPage() {
 
             toast.success("Logged in successfully!");
 
-            if (user.roomId) {
-                router.push("/dashboard");
-            } else {
-                router.push("/join");
+            if(!user.roomId){
+                router.push("/join")
+            } else{
+                router.push("/dashboard")
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             toast.error("Invalid credentials. Please try again.");
+            console.error("Login error:", err);
         } finally {
             setLoading(false);
         }
@@ -143,7 +143,7 @@ export default function LoginPage() {
                     {/* Footer */}
                     <div className="mt-8 text-center">
                         <p className="text-white/70">
-                            Don't have an account?{" "}
+                            Don&apos;t have an account?{" "}
                             <Link
                                 href="/signup"
                                 className="text-purple-400 hover:text-purple-300 font-semibold transition-colors duration-200 hover:underline"
