@@ -4,27 +4,7 @@ import axios, {
     InternalAxiosRequestConfig,
 } from "axios";
 import { useAuthStore } from "@/stores/authStore";
-
-interface ApiSuccessResponse<T = any> {
-    success: true;
-    message: string;
-    data: T;
-}
-
-interface ApiErrorResponse {
-    success: false;
-    message: string;
-    data: null;
-    errors?: string[];
-}
-
-interface ApiError {
-    message: string;
-    statusCode?: number;
-    success: false;
-    errors?: string[];
-    data: null;
-}
+import { ApiErrorResponse, ApiSuccessResponse, ApiError } from "@/types/api";
 
 const axiosInstance = axios.create({
     baseURL:
@@ -128,14 +108,13 @@ export const createApiError = (
 
 // Helper function
 export const isApiSuccess = <T>(
-    response: any
+    response: unknown
 ): response is ApiSuccessResponse<T> => {
     return (
-        response && typeof response === "object" && response.success === true
+        response && typeof response === "object" && (response as ApiSuccessResponse<T>).success === true
     );
 };
 
-// Helper function
 export const getApiData = <T>(
     response: AxiosResponse<ApiSuccessResponse<T>>
 ): T => {

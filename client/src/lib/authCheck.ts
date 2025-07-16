@@ -11,6 +11,7 @@ export const checkAuthStatus = async () => {
         setUser(user);
         return { isAuthenticated: true, user };
     } catch (error) {
+        console.error("Auth check failed:", error);
         logout();
         return { isAuthenticated: false, user: null };
     }

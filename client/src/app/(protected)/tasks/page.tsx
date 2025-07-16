@@ -5,20 +5,13 @@ import { useForm, useFieldArray } from "react-hook-form";
 import {
     Plus,
     Trophy,
-    Target,
     Calendar,
-    Flag,
     Star,
-    Zap,
     Trash2,
     Check,
-    X,
     Clock,
     AlertTriangle,
     List,
-    Tag,
-    Circle,
-    ChevronDown,
     Edit,
 } from "lucide-react";
 import axiosInstance from "@/lib/axiosInstance";
@@ -64,7 +57,7 @@ const mockTags = ["Work", "Personal", "Health", "Learning", "Finance"];
 export const calculateTaskPoints = (
     task: Omit<Task, "xp" | "id" | "createdAt" | "updatedAt">
 ): number => {
-    let basePoints = 10;
+    const basePoints = 10;
 
     const priorityMultiplier = {
         low: 1,
@@ -101,7 +94,7 @@ export const calculateTaskPoints = (
             priorityMultiplier[task.priority]
     );
 
-    return Math.max(totalPoints, 5); 
+    return Math.max(totalPoints, 5);
 };
 
 const validateTask = (data: TaskFormData): string | null => {
@@ -129,7 +122,7 @@ const TaskBoard: React.FC = () => {
             const response = await axiosInstance.get("/tasks");
             const taskData = response.data.data;
 
-            const transformedTasks = taskData.map((task: any) => ({
+            const transformedTasks = taskData.map((task: Task) => ({
                 id: task.id,
                 title: task.title,
                 description: task.description || "",
@@ -156,7 +149,6 @@ const TaskBoard: React.FC = () => {
         control,
         reset,
         watch,
-        setValue,
         formState: { errors },
     } = useForm<TaskFormData>({
         defaultValues: {
@@ -230,7 +222,16 @@ const TaskBoard: React.FC = () => {
             ...data,
             description: data.description || undefined,
             deadline: data.deadline || null,
-            xp: calculateTaskPoints(data as any),
+            xp: calculateTaskPoints({
+                title: data.title,
+                description: data.description,
+                subtasks: [],
+                tag: data.tag,
+                priority: data.priority,
+                dailyTask: data.dailyTask,
+                deadline: data.deadline,
+                isCompleted: data.isCompleted,
+            }),
             subtasks: data.subtasks.map((st) => ({
                 title: st.title,
                 completed: false,
@@ -240,15 +241,13 @@ const TaskBoard: React.FC = () => {
 
         try {
             if (isEditMode && currentTaskId) {
-                console.log("Updating... ", taskData)
                 await axiosInstance.put(`/tasks/${currentTaskId}`, taskData);
             } else {
-                console.log("Saving... ", taskData)
                 // Checked for creating daily task,
                 await axiosInstance.post("/tasks", taskData);
             }
 
-            toast.success("Task saved successfully!")
+            toast.success("Task saved successfully!");
 
             fetchTasks();
             reset();
@@ -257,7 +256,7 @@ const TaskBoard: React.FC = () => {
             setCurrentTaskId(null);
         } catch (error) {
             console.error("Error saving task:", error);
-            toast.error("Failed to save task. Please try again.")
+            toast.error("Failed to save task. Please try again.");
         }
     };
 
@@ -293,35 +292,47 @@ const TaskBoard: React.FC = () => {
             const task = tasks.find((t) => t.id === taskId);
             if (!task) return;
 
-            await axiosInstance.put(`/tasks/${taskId}/completion`, {
-                isCompleted: !task.isCompleted,
-            });
-            fetchTasks(); // Refresh the task list
+            // Determine the action based on the current completion state
+            const action = task.isCompleted ? "incomplete" : "complete";
+
+            // Make the appropriate PATCH request based on completion state
+            await axiosInstance.patch(`/tasks/${taskId}/${action}`);
+
+            // Success toast with the action (complete/incomplete)
+            toast.success(
+                `Task "${task.title}" marked as ${
+                    action === "complete" ? "completed" : "pending"
+                }!`
+            );
+
+            // Re-fetch tasks after update
+            fetchTasks();
         } catch (error) {
             console.error("Error toggling task completion:", error);
+            toast.error("Something went wrong. Please try again.");
         }
     };
 
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case "low":
-                return "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400";
-            case "medium":
-                return "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400";
-            case "high":
-                return "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400";
-            case "urgent":
-                return "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400";
-            default:
-                return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
-        }
-    };
+    // const getPriorityColor = (priority: string) => {
+    //     switch (priority) {
+    //         case "low":
+    //             return "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400";
+    //         case "medium":
+    //             return "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400";
+    //         case "high":
+    //             return "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400";
+    //         case "urgent":
+    //             return "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400";
+    //         default:
+    //             return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
+    //     }
+    // };
 
-    const getCompletionColor = (isCompleted: boolean) => {
-        return isCompleted
-            ? "bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-400"
-            : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
-    };
+    // const getCompletionColor = (isCompleted: boolean) => {
+    //     return isCompleted
+    //         ? "bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-400"
+    //         : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
+    // };
 
     const filteredTasks = React.useMemo(() => {
         switch (activeTab) {

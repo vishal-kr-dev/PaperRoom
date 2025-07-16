@@ -22,7 +22,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         if (user && !user.roomId) {
             router.push("/join");
         }
-    }, [user?.roomId]);
+    }, [user, router]);
 
     if (!isInitialized || isLoading) {
         return (

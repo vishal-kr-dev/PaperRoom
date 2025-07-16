@@ -32,9 +32,9 @@ export const authService = {
 
     logout: async () => {
         try {
-            await axiosInstance.post("/auth/logout");
             useAuthStore.getState().logout();
         } catch (error) {
+            console.error("Logout failed:", error)
             useAuthStore.getState().logout();
         }
     },

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { ArrowRight, Sun, Moon, Menu, X } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { useUIStore } from "@/stores/uiStore";
 import Image from "next/image";
@@ -14,7 +14,6 @@ const homeNavItems = [
 ];
 
 const NavbarLanding = () => {
-    const pathname = usePathname();
     const router = useRouter();
     const { theme, setTheme } = useUIStore();
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
     Card,
     CardContent,
@@ -34,6 +34,7 @@ import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import NavbarAuth from "@/components/NavbarAuth";
 import { useAuthStore } from "@/stores/authStore";
+import { checkAuthStatus } from "@/lib/authCheck";
 
 interface JoinRoomForm {
     roomCode: string;
@@ -105,14 +106,19 @@ const RoomDiscoveryPage: React.FC = () => {
             const response = await axiosInstance.post(
                 `/room/${joinForm.roomCode}/join`
             );
+            console.log("joined  ", response)
 
             if (response.status === 200) {
                 toast.success("Joined room successfully!");
-                router.push("/dashboard");
 
+                await checkAuthStatus()
+                
                 setIsJoining(false);
                 setJoinForm({ roomCode: "" });
                 setJoinErrors({});
+
+                console.dir(user, {depth: null})
+                router.push("/dashboard");
             }
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -177,7 +183,7 @@ const RoomDiscoveryPage: React.FC = () => {
         }
     };
 
-    const updateCreateForm = (field: keyof CreateRoomForm, value: any) => {
+    const updateCreateForm = (field: keyof CreateRoomForm, value: string | number | string[]) => {
         setCreateForm((prev) => ({ ...prev, [field]: value }));
         // Clear error when user starts typing
         if (createErrors[field]) {

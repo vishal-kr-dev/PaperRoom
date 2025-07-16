@@ -12,10 +12,8 @@ export const useRoomInit = () => {
 
         const init = async () => {
             try {
-                if (!room) {
-                    const data = await fetchRoom();
-                    setRoom(data);
-                }
+                const data = await fetchRoom();
+                setRoom(data);
             } catch (err) {
                 console.error("Room init failed:", err);
             } finally {

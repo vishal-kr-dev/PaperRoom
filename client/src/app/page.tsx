@@ -8,20 +8,15 @@ import {
     Tag,
     Star,
     Sparkles,
-    Zap,
     Globe,
-    Shield,
     Twitter,
     Github,
     Linkedin,
-    Menu,
-    X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
@@ -34,58 +29,57 @@ const HomePage = () => {
     const router = useRouter();
 
     const [isVisible, setIsVisible] = useState(false);
-    const [currentTestimonial, setCurrentTestimonial] = useState(0);
+    // const [currentTestimonial, setCurrentTestimonial] = useState(0);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isScrolled, setIsScrolled] = useState(false);
+    // const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
         setIsVisible(true);
-        const interval = setInterval(() => {
-            setCurrentTestimonial((prev) => (prev + 1) % 3);
-        }, 5000);
+        // const interval = setInterval(() => {
+        //     setCurrentTestimonial((prev) => (prev + 1) % 3);
+        // }, 5000);
 
         const handleMouseMove = (e: MouseEvent) => {
             setMousePosition({ x: e.clientX, y: e.clientY });
         };
 
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
-        };
+        // const handleScroll = () => {
+        //     setIsScrolled(window.scrollY > 20);
+        // };
 
         window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("scroll", handleScroll);
+        // window.addEventListener("scroll", handleScroll);
 
         return () => {
-            clearInterval(interval);
+            // clearInterval(interval);
             window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("scroll", handleScroll);
+            // window.removeEventListener("scroll", handleScroll);
         };
     }, []);
 
-    const testimonials = [
-        {
-            name: "Jane Doe",
-            role: "Product Designer",
-            initials: "JD",
-            quote: "PaperRoom has transformed how our design team collaborates. The point system makes task completion fun and engaging.",
-            gradient: "from-purple-500 to-pink-500",
-        },
-        {
-            name: "Mike Smith",
-            role: "Team Lead",
-            initials: "MS",
-            quote: "The analytics and tracking features help me understand my team's productivity patterns and allocate resources more effectively.",
-            gradient: "from-blue-500 to-cyan-500",
-        },
-        {
-            name: "Alex Johnson",
-            role: "Developer",
-            initials: "AJ",
-            quote: "I love how PaperRoom organizes tasks by interest areas. It helps me focus on what I'm passionate about while still contributing to the team.",
-            gradient: "from-green-500 to-emerald-500",
-        },
-    ];
+    // const testimonials = [
+    //     {
+    //         name: "Jane Doe",
+    //         role: "Product Designer",
+    //         initials: "JD",
+    //         quote: "PaperRoom has transformed how our design team collaborates. The point system makes task completion fun and engaging.",
+    //         gradient: "from-purple-500 to-pink-500",
+    //     },
+    //     {
+    //         name: "Mike Smith",
+    //         role: "Team Lead",
+    //         initials: "MS",
+    //         quote: "The analytics and tracking features help me understand my team's productivity patterns and allocate resources more effectively.",
+    //         gradient: "from-blue-500 to-cyan-500",
+    //     },
+    //     {
+    //         name: "Alex Johnson",
+    //         role: "Developer",
+    //         initials: "AJ",
+    //         quote: "I love how PaperRoom organizes tasks by interest areas. It helps me focus on what I'm passionate about while still contributing to the team.",
+    //         gradient: "from-green-500 to-emerald-500",
+    //     },
+    // ];
 
     const features = [
         {

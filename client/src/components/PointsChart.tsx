@@ -16,6 +16,11 @@ interface PointsChartProps {
     height?: number;
 }
 
+interface ChartData {
+    date: string;
+    [user: string]: number | string;
+}
+
 // Generate a color palette for dynamic users
 const generateColor = (index: number): string => {
     const colors = [
@@ -34,7 +39,7 @@ const generateColor = (index: number): string => {
 };
 
 export default function PointsChart({ height = 320 }: PointsChartProps) {
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<ChartData[]>([]);
     const [users, setUsers] = useState<string[]>([]);
     const [userColors, setUserColors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
@@ -44,7 +49,7 @@ export default function PointsChart({ height = 320 }: PointsChartProps) {
         try {
             setLoading(true);
             const res = await axiosInstance.get("/user/xp-chart");
-            const chartData = res.data.data;
+            const chartData: ChartData[] = res.data.data;
 
             if (!chartData || chartData.length === 0) {
                 setError("No data available");
@@ -53,7 +58,7 @@ export default function PointsChart({ height = 320 }: PointsChartProps) {
 
             // Extract unique users from the data
             const uniqueUsers = new Set<string>();
-            chartData.forEach((item: any) => {
+            chartData.forEach((item: ChartData) => {
                 Object.keys(item).forEach((key) => {
                     if (
                         key !== "date" &&
@@ -69,11 +74,11 @@ export default function PointsChart({ height = 320 }: PointsChartProps) {
             const usersArray = Array.from(uniqueUsers);
 
             // Fill missing user data with 0 or null for better visualization
-            const processedData = chartData.map((item: any) => {
+            const processedData = chartData.map((item: ChartData) => {
                 const processedItem = { ...item };
                 usersArray.forEach((user) => {
                     if (!(user in processedItem)) {
-                        processedItem[user] = 0; // or null if you want gaps
+                        processedItem[user] = 0;
                     }
                 });
                 return processedItem;
@@ -137,7 +142,6 @@ export default function PointsChart({ height = 320 }: PointsChartProps) {
 
     return (
         <div className="p-4 border rounded-xl bg-background shadow-sm">
-
             <ResponsiveContainer width="100%" height={height}>
                 <AreaChart data={data}>
                     <defs>
