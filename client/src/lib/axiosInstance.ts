@@ -111,7 +111,10 @@ export const isApiSuccess = <T>(
     response: unknown
 ): response is ApiSuccessResponse<T> => {
     return (
-        response && typeof response === "object" && (response as ApiSuccessResponse<T>).success === true
+        !!response &&
+        typeof response === "object" &&
+        "success" in response &&
+        (response as ApiSuccessResponse<T>).success === true
     );
 };
 
