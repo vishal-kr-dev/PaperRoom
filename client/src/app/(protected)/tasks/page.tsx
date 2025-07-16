@@ -54,7 +54,7 @@ interface TaskFormData {
 const mockTags = ["Work", "Personal", "Health", "Learning", "Finance"];
 
 // Points calculation logic
-export const calculateTaskPoints = (
+const calculateTaskPoints = (
     task: Omit<Task, "xp" | "id" | "createdAt" | "updatedAt">
 ): number => {
     const basePoints = 10;
