@@ -11,10 +11,9 @@ import { RoomDailyStats } from "../models/RoomDailyStats.js";
 import { Room } from "../models/Room.model.js";
 import { DailyStats } from "../models/DailyStats.model.js";
 import { User } from "../models/User.model.js";
-import { convertToIST } from "../utils/helper/convertToIST.js";
+import { getISTMidnightDate } from "../utils/getISTMidnightDate.js";
 
 const createNewTask = asyncHandler(async (req, res) => {
-    console.log("Creating...", req.body);
     const { title, description, subtasks, tag, priority, dailyTask, deadline } =
         req.body;
     const user = req.user;
@@ -88,20 +87,18 @@ const getAllTasks = asyncHandler(async (req, res) => {
         return sendResponse(res, 200, [], "No tasks found");
     }
 
-    const todayIST = convertToIST(new Date());
-    todayIST.setHours(0, 0, 0, 0);
+    const todayIST = getISTMidnightDate();
 
     const resetPromises = tasks.map(async (task) => {
         if (task.dailyTask) {
-            const taskUpdatedAtIST = convertToIST(task.updatedAt);
-            taskUpdatedAtIST.setHours(0, 0, 0, 0);
+            const taskUpdatedAtIST = getISTMidnightDate(task.updatedAt);
 
             const isNotUpdatedToday =
                 taskUpdatedAtIST.getTime() !== todayIST.getTime();
 
             if (isNotUpdatedToday && task.completedBy.length > 0) {
                 task.completedBy = [];
-                task.updatedAt = new Date();
+                task.updatedAt = new Date(); 
                 await task.save();
             }
         }
@@ -128,6 +125,7 @@ const getAllTasks = asyncHandler(async (req, res) => {
         "Tasks fetched successfully"
     );
 });
+
 
 const updateTask = asyncHandler(async (req, res) => {
     const { id } = req.params;
