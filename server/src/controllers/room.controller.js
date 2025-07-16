@@ -8,9 +8,9 @@ import { APIerror } from "../utils/APIerror.js";
 import { User } from "../models/User.model.js";
 
 const getRoomData = asyncHandler(async (req, res) => {
-    const userId = req.user._id;
+    const roomId = req.user.roomId;
 
-    const room = await Room.findOne({ members: userId }).populate(
+    const room = await Room.findOne({ _id: roomId }).populate(
         "members",
         "username email avatar"
     );

@@ -395,7 +395,7 @@ const markComplete = asyncHandler(async (req, res) => {
                         date,
                     },
                     {
-                        $inc: { xp: completedTask.xp, totalTasksCompleted: 1 },
+                        $inc: { xp: completedTask.xp, tasksCompleted: 1 },
                     },
                     {
                         upsert: true,
@@ -465,6 +465,150 @@ const markComplete = asyncHandler(async (req, res) => {
     }
 });
 
+const markIncomplete = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const user = req.user;
+
+    if (!id) {
+        throw new APIerror(400, "Task ID is required");
+    }
+
+    if (!user) {
+        throw new APIerror(401, "User authentication required");
+    }
+
+    const task = await Task.findOne({
+        _id: id,
+        roomId: user.roomId,
+    });
+
+    if (!task) {
+        throw new APIerror(
+            404,
+            "Task not found or you don't have access to this task"
+        );
+    }
+
+    if (!task.completedBy || !task.completedBy.includes(user._id)) {
+        throw new APIerror(
+            400,
+            "Task not completed by this user, cannot mark as incomplete"
+        );
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+        await session.withTransaction(async () => {
+            // 1. Update the task to remove the user from completedBy
+            const incompleteTask = await Task.findOneAndUpdate(
+                {
+                    _id: id,
+                    roomId: user.roomId,
+                },
+                {
+                    $pull: { completedBy: user._id }, // Remove the user from completedBy
+                },
+                {
+                    new: true,
+                    session,
+                }
+            );
+
+            if (!incompleteTask) {
+                throw new APIerror(500, "Failed to mark task as incomplete");
+            }
+
+            // 2. Delete activity log for this task completion
+            await UserActivity.deleteMany({
+                userId: user._id,
+                taskId: incompleteTask._id,
+                action: "completed", // Only delete 'completed' action
+            });
+
+            // 3. Adjust user stats, decrement XP or tasksCompleted, etc.
+            const date = new Date().toISOString().split("T")[0]; // For daily stats
+
+            // Remove XP from DailyStats
+            await DailyStats.findOneAndUpdate(
+                {
+                    userId: user._id,
+                    roomId: user.roomId,
+                    date,
+                },
+                {
+                    $inc: { xp: -incompleteTask.xp, tasksCompleted: -1 },
+                },
+                {
+                    upsert: true,
+                    new: true,
+                    session,
+                }
+            );
+
+            // Remove task count from MonthlyStats
+            const month = `${new Date().getFullYear()}-${String(
+                new Date().getMonth() + 1
+            ).padStart(2, "0")}`;
+            await MonthlyStats.findOneAndUpdate(
+                {
+                    userId: user._id,
+                    roomId: user.roomId,
+                    month,
+                },
+                {
+                    $inc: { xp: -incompleteTask.xp, totalTasksCompleted: -1 },
+                },
+                {
+                    upsert: true,
+                    new: true,
+                    session,
+                }
+            );
+
+            // 4. Remove user from active users in RoomDailyStats
+            await RoomDailyStats.findOneAndUpdate(
+                {
+                    roomId: user.roomId,
+                    date,
+                },
+                {
+                    $pull: { activeUserIds: user._id },
+                    $inc: {
+                        totalXP: -incompleteTask.xp,
+                        totalTasksCompleted: -1,
+                    },
+                },
+                {
+                    upsert: true,
+                    new: true,
+                    session,
+                }
+            );
+
+            return incompleteTask;
+        });
+
+        // Return success response
+        const updatedTask = await Task.findById(id);
+        return sendResponse(
+            res,
+            200,
+            updatedTask,
+            "Task marked as incomplete successfully"
+        );
+    } catch (error) {
+        throw new APIerror(
+            500,
+            error.message || "Failed to mark task as incomplete"
+        );
+    } finally {
+        await session.endSession();
+    }
+});
+
+
+
 // Example usage in other places:
 const getUserStats = asyncHandler(async (req, res) => {
     const user = req.user;
@@ -482,4 +626,4 @@ const getUserStats = asyncHandler(async (req, res) => {
     );
 });
 
-export { createNewTask, getAllTasks, updateTask, deleteTask, markComplete };
+export { createNewTask, getAllTasks, updateTask, deleteTask, markComplete, markIncomplete };

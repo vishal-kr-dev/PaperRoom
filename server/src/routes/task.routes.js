@@ -6,6 +6,7 @@ import {
     updateTask,
     deleteTask,
     markComplete,
+    markIncomplete,
 } from "../controllers/task.controller.js";
 import { validate } from "../middlewares/validateWithZod.middleware.js";
 import { createTaskSchema, updateTaskSchema } from "../schemas/task.schema.js";
@@ -23,5 +24,7 @@ router
     .delete(verifyJWT, deleteTask);
 
 router.patch("/:id/complete", verifyJWT, markComplete);
+
+router.patch("/:id/incomplete", verifyJWT, markIncomplete)
 
 export default router;

@@ -6,7 +6,6 @@ const dailyStatsSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true,
-            unique: true,
         },
         roomId: {
             type: Schema.Types.ObjectId,
@@ -31,11 +30,8 @@ const dailyStatsSchema = new Schema(
             required: true,
         },
     },
-    {
-        timestamps: true,
-    }
 );
 
-
+dailyStatsSchema.index({ userId: 1, date: 1 });
 
 export const DailyStats = mongoose.model("DailyStats", dailyStatsSchema);
