@@ -78,14 +78,14 @@ const loginUser = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 3600000, // 1 hour
-        sameSite: "Strict",
+        sameSite: "None",
     });
 
     res.cookie("refresh_token", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 86400000, // 1 day
-        sameSite: "Strict",
+        sameSite: "None",
     });
 
     const publicUser = {
