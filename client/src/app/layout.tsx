@@ -8,6 +8,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { checkAuthStatus } from "@/lib/authCheck";
 import { useUIStore } from "@/stores/uiStore";
 
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 const geistSans = Geist({
     variable: "--font-geist-sans",
     subsets: ["latin"],
@@ -58,6 +60,7 @@ export default function RootLayout({
             className={`${geistSans.variable} ${geistMono.variable}`}
         >
             <body className="antialiased min-h-screen bg-background text-foreground">
+                <SpeedInsights />
                 <Toaster richColors position="top-center" />
                 <main>{children}</main>
             </body>
