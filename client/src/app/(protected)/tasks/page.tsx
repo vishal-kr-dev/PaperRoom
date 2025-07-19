@@ -17,6 +17,7 @@ import {
 import axiosInstance from "@/lib/axiosInstance";
 import TaskCard from "@/components/TaskCard";
 import { toast } from "sonner";
+import { useRoomStore } from "@/stores/roomStore";
 
 // Types
 interface Subtask {
@@ -50,8 +51,6 @@ interface TaskFormData {
     deadline: string;
     isCompleted: boolean;
 }
-
-const mockTags = ["Work", "Personal", "Health", "Learning", "Finance"];
 
 // Points calculation logic
 const calculateTaskPoints = (
@@ -112,6 +111,10 @@ const TaskBoard: React.FC = () => {
     const [activeTab, setActiveTab] = useState("all");
     const [expandedTask, setExpandedTask] = useState<string | null>(null);
     const [formError, setFormError] = useState<string | null>(null);
+
+    const room = useRoomStore((s) => s.room);
+
+    const tags = room?.tags;
 
     useEffect(() => {
         fetchTasks();
@@ -593,7 +596,7 @@ const TaskBoard: React.FC = () => {
                                             className="w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                         >
                                             <option value="">Select tag</option>
-                                            {mockTags.map((tag) => (
+                                            {tags.map((tag) => (
                                                 <option key={tag} value={tag}>
                                                     {tag}
                                                 </option>
