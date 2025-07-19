@@ -1,14 +1,9 @@
-"use client";
-
-import { useEffect } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata } from "next";
 import { Toaster } from "sonner";
-import { useAuthStore } from "@/stores/authStore";
-import { checkAuthStatus } from "@/lib/authCheck";
-import { useUIStore } from "@/stores/uiStore";
-
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import AuthThemeClient from "@/components/AuthThemeClient";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -22,38 +17,66 @@ const geistMono = Geist_Mono({
     display: "swap",
 });
 
+export const metadata: Metadata = {
+    title: "PaperRoom",
+    description:
+        "Boost your team's productivity with PaperRoom — gamified task tracking, XP rewards, and real-time collaboration.",
+    keywords: [
+        "task management",
+        "productivity",
+        "collaboration",
+        "XP system",
+        "gamified productivity",
+        "PaperRoom",
+    ],
+    metadataBase: new URL("https://paper-room.vercel.app"),
+    openGraph: {
+        title: "PaperRoom",
+        description:
+            "Gamify your workflow. Track tasks, earn XP, and grow as a team.",
+        url: "https://paper-room.vercel.app/",
+        siteName: "PaperRoom",
+        locale: "en_US",
+        type: "website",
+        // images: [
+        //   {
+        //     url: "https://paper-room.vercel.app/og-image.png",
+        //     width: 1200,
+        //     height: 630,
+        //     alt: "PaperRoom Dashboard Preview",
+        //   },
+        // ],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "PaperRoom",
+        description:
+            "Gamify your productivity and team workflow with PaperRoom.",
+        // images: ["https://paper-room.vercel.app/og-image.png"],
+        // creator: "@yourTwitterHandle",
+    },
+    icons: {
+        icon: "/favicon.ico",
+        shortcut: "/favicon.ico",
+        apple: "/apple-touch-icon.png",
+    },
+    // authors: [{ name: "Vishal Kumar", url: "https://yourportfolio.com" }],
+    // creator: "Vishal Kumar",
+};
+
+// export const viewport: Viewport = {
+//     themeColor: [
+//         { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+//         { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+//     ],
+// };
+
+
 export default function RootLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    // Credentials check on page load
-    const { isInitialized, setInitialized, setLoading } = useAuthStore();
-
-    useEffect(() => {
-        if (!isInitialized) {
-            const initAuth = async () => {
-                setLoading(true);
-                await checkAuthStatus();
-                setInitialized(true);
-                setLoading(false);
-            };
-
-            initAuth();
-        }
-    }, [isInitialized, setInitialized, setLoading]);
-
-    // Adding theme
-    const theme = useUIStore((state) => state.theme);
-
-    useEffect(() => {
-        if (theme === "dark") {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-        }
-    }, [theme]);
-
     return (
         <html
             lang="en"
@@ -62,6 +85,7 @@ export default function RootLayout({
             <body className="antialiased min-h-screen bg-background text-foreground">
                 <SpeedInsights />
                 <Toaster richColors position="top-center" />
+                <AuthThemeClient />
                 <main>{children}</main>
             </body>
         </html>

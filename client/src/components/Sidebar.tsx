@@ -5,20 +5,35 @@ import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { LogOut } from "lucide-react";
+import {
+    LayoutDashboard,
+    ClipboardList,
+    // LineChart,
+    // Users,
+    // Bell,
+    // User,
+    // Settings,
+    LogOut,
+    // UsersRound,
+} from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const Sidebar = () => {
+
+    const pathname = usePathname();
+
     const { user, logout } = useAuthStore();
     const { isSidebarOpen, toggleSidebar, closeSidebar } = useUIStore();
 
     const navItems = [
-        { href: "/dashboard", label: "Dashboard", icon: "📊" },
-        { href: "/tasks", label: "Tasks", icon: "📝" },
-        { href: "/analytics", label: "Analytics", icon: "📈" },
-        { href: "/members", label: "Members", icon: "👥" },
-        { href: "/notifications", label: "Notifications", icon: "🔔" },
-        { href: "/profile", label: "Profile", icon: "👤" },
-        { href: "/settings", label: "Settings", icon: "⚙️" },
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/tasks", label: "Tasks", icon: ClipboardList },
+        // { href: "/analytics", label: "Analytics", icon: LineChart },
+        // { href: "/members", label: "Members", icon: Users },
+        // { href: "/notifications", label: "Notifications", icon: Bell },
+        // { href: "/room", label: "Room", icon: UsersRound },
+        // { href: "/profile", label: "Profile", icon: User },
+        // { href: "/settings", label: "Settings", icon: Settings },
     ];
 
     const handleLogout = async () => {
@@ -56,17 +71,25 @@ const Sidebar = () => {
                 </div>
 
                 <nav className="flex-1 px-3 py-4 space-y-1">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={closeSidebar}
-                            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-blue-100 dark:hover:bg-gray-800 hover:text-blue-700 dark:hover:text-blue-400 transition-all group"
-                        >
-                            <span className="text-lg">{item.icon}</span>
-                            <span className="truncate">{item.label}</span>
-                        </Link>
-                    ))}
+                    {navItems.map(({ href, label, icon: Icon }) => {
+                        const isActive = pathname === href;
+
+                        return (
+                            <Link
+                                key={href}
+                                href={href}
+                                onClick={closeSidebar}
+                                className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-all group ${
+                                    isActive
+                                        ? "bg-blue-100 text-blue-700 dark:bg-gray-800 dark:text-blue-400"
+                                        : "text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-gray-800 hover:text-blue-700 dark:hover:text-blue-400"
+                                }`}
+                            >
+                                <Icon className="size-5" />
+                                <span className="truncate">{label}</span>
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 <div className="mt-auto p-4 border-t border-gray-200 dark:border-gray-700">

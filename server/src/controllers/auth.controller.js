@@ -74,18 +74,20 @@ const loginUser = asyncHandler(async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
 
+    const isProduction = process.env.NODE_ENV === "production";
+
     res.cookie("access_token", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 3600000, // 1 hour
-        sameSite: "None",
+        secure: isProduction,
+        maxAge: 3600000,
+        sameSite: isProduction ? "None" : "Lax",
     });
 
     res.cookie("refresh_token", refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 86400000, // 1 day
-        sameSite: "None",
+        secure: isProduction,
+        maxAge: 86400000,
+        sameSite: isProduction ? "None" : "Lax",
     });
 
     const publicUser = {
