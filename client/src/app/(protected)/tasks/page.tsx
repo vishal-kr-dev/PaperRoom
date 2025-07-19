@@ -114,8 +114,6 @@ const TaskBoard: React.FC = () => {
 
     const room = useRoomStore((s) => s.room);
 
-    const tags = room?.tags;
-
     useEffect(() => {
         fetchTasks();
     }, []);
@@ -596,7 +594,7 @@ const TaskBoard: React.FC = () => {
                                             className="w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                         >
                                             <option value="">Select tag</option>
-                                            {tags.map((tag) => (
+                                            {room?.tags?.map((tag) => (
                                                 <option key={tag} value={tag}>
                                                     {tag}
                                                 </option>
