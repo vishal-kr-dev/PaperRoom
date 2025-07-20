@@ -36,6 +36,7 @@ export const authService = {
         } catch (error) {
             console.error("Logout failed:", error)
             useAuthStore.getState().logout();
+            throw error;
         }
     },
 };

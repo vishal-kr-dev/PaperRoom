@@ -14,6 +14,7 @@ import {
     Zap,
     Target,
     TrendingUp,
+    Loader2,
 } from "lucide-react";
 
 type PriorityLevel = "low" | "medium" | "high" | "urgent";
@@ -47,6 +48,9 @@ interface TaskCardProps {
     toggleTaskCompletion: (taskId: string) => void;
     prepareEditForm: (task: Task) => void;
     deleteTask: (taskId: string) => void;
+    isToggling?: boolean;
+    isDeleting?: boolean;
+    isEditing?: boolean;
 }
 
 type PriorityColorMap = {
@@ -63,6 +67,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
     toggleTaskCompletion,
     prepareEditForm,
     deleteTask,
+    isToggling,
+    isDeleting,
+    isEditing,
 }) => {
     const getPriorityColor = (priority: PriorityLevel): string => {
         const colorMap: PriorityColorMap = {
@@ -110,8 +117,20 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     : isOverdue(task.deadline)
                     ? "border-red-200 dark:border-red-800/50 shadow-red-100/50 dark:shadow-red-900/20"
                     : "border-gray-200 dark:border-gray-700 shadow-sm"
-            }`}
+            } ${isToggling || isDeleting || isEditing ? "opacity-75" : ""}`}
         >
+            {/* Loading Overlay */}
+            {isDeleting && (
+                <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+                    <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="w-8 h-8 animate-spin text-red-600 dark:text-red-400" />
+                        <span className="text-sm font-medium text-red-600 dark:text-red-400">
+                            Deleting task...
+                        </span>
+                    </div>
+                </div>
+            )}
+
             <div
                 className={`absolute top-0 left-0 right-0 h-1 ${
                     task.priority === "urgent"
@@ -293,13 +312,21 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
                     <button
                         onClick={() => toggleTaskCompletion(task.id)}
-                        className={`px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-all duration-200 ${
-                            task.isCompleted
+                        disabled={isToggling}
+                        className={`px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-all duration-200 disabled:cursor-not-allowed ${
+                            isToggling
+                                ? "bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-600 dark:text-blue-400 border-2 border-blue-200 dark:border-blue-800"
+                                : task.isCompleted
                                 ? "bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900/20 dark:to-green-900/20 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-200 dark:border-emerald-800 shadow-sm"
                                 : "bg-gradient-to-r from-gray-100 to-slate-100 dark:from-gray-700 dark:to-slate-700 text-gray-700 dark:text-gray-300 hover:from-gray-200 hover:to-slate-200 dark:hover:from-gray-600 dark:hover:to-slate-600 border-2 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                         }`}
                     >
-                        {task.isCompleted ? (
+                        {isToggling ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span>Updating...</span>
+                            </>
+                        ) : task.isCompleted ? (
                             <>
                                 <Check className="w-4 h-4" />
                                 <span>Completed</span>
@@ -311,21 +338,47 @@ const TaskCard: React.FC<TaskCardProps> = ({
                             </>
                         )}
                     </button>
-
                     <div className="flex gap-2">
                         <button
                             onClick={() => prepareEditForm(task)}
-                            className="p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-600 dark:text-blue-400 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-200 border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700"
-                            title="Edit Task"
+                            disabled={isEditing || isToggling || isDeleting}
+                            className={`p-2 rounded-lg transition-all duration-200 border ${
+                                isEditing
+                                    ? "bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 cursor-not-allowed"
+                                    : "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-600 dark:text-blue-400 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700"
+                            } ${
+                                isToggling || isDeleting
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                            }`}
+                            title={isEditing ? "Editing..." : "Edit Task"}
                         >
-                            <Edit className="w-4 h-4" />
+                            {isEditing ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Edit className="w-4 h-4" />
+                            )}
                         </button>
+
                         <button
                             onClick={() => deleteTask(task.id)}
-                            className="p-2 rounded-lg bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 text-red-600 dark:text-red-400 hover:from-red-100 hover:to-pink-100 dark:hover:from-red-900/30 dark:hover:to-pink-900/30 transition-all duration-200 border border-red-200 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700"
-                            title="Delete Task"
+                            disabled={isDeleting || isToggling || isEditing}
+                            className={`p-2 rounded-lg transition-all duration-200 border ${
+                                isDeleting
+                                    ? "bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-900/30 dark:to-pink-900/30 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 cursor-not-allowed"
+                                    : "bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 text-red-600 dark:text-red-400 hover:from-red-100 hover:to-pink-100 dark:hover:from-red-900/30 dark:hover:to-pink-900/30 border-red-200 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700"
+                            } ${
+                                isToggling || isEditing
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                            }`}
+                            title={isDeleting ? "Deleting..." : "Delete Task"}
                         >
-                            <Trash2 className="w-4 h-4" />
+                            {isDeleting ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Trash2 className="w-4 h-4" />
+                            )}
                         </button>
                     </div>
                 </div>

@@ -111,6 +111,11 @@ const TaskBoard: React.FC = () => {
     const [activeTab, setActiveTab] = useState("all");
     const [expandedTask, setExpandedTask] = useState<string | null>(null);
     const [formError, setFormError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loadingTask, setLoadingTask] = useState<{
+        id: string | null;
+        action: "toggling" | "deleting" | "editing" | null;
+    }>({ id: null, action: null });
 
     const room = useRoomStore((s) => s.room);
 
@@ -211,9 +216,11 @@ const TaskBoard: React.FC = () => {
     };
 
     const onSubmit = async (data: TaskFormData) => {
+        setIsSubmitting(true);
         const validationError = validateTask(data);
         if (validationError) {
             setFormError(validationError);
+            setIsSubmitting(false);
             return;
         }
 
@@ -258,15 +265,20 @@ const TaskBoard: React.FC = () => {
         } catch (error) {
             console.error("Error saving task:", error);
             toast.error("Failed to save task. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const deleteTask = async (taskId: string) => {
+        setLoadingTask({ id: taskId, action: "deleting" });
         try {
             await axiosInstance.delete(`/tasks/${taskId}`);
             fetchTasks(); // Refresh the task list
         } catch (error) {
             console.error("Error deleting task:", error);
+        }finally{
+            setLoadingTask({id: null, action: null})
         }
     };
 
@@ -289,6 +301,7 @@ const TaskBoard: React.FC = () => {
     };
 
     const toggleTaskCompletion = async (taskId: string) => {
+        setLoadingTask({ id: taskId, action: "toggling" });
         try {
             const task = tasks.find((t) => t.id === taskId);
             if (!task) return;
@@ -311,6 +324,8 @@ const TaskBoard: React.FC = () => {
         } catch (error) {
             console.error("Error toggling task completion:", error);
             toast.error("Something went wrong. Please try again.");
+        } finally {
+            setLoadingTask({ id: null, action: null });
         }
     };
 
@@ -463,6 +478,18 @@ const TaskBoard: React.FC = () => {
                             toggleTaskCompletion={toggleTaskCompletion}
                             prepareEditForm={prepareEditForm}
                             deleteTask={deleteTask}
+                            isToggling={
+                                loadingTask.id === task.id &&
+                                loadingTask.action === "toggling"
+                            }
+                            isDeleting={
+                                loadingTask.id === task.id &&
+                                loadingTask.action === "deleting"
+                            }
+                            isEditing={
+                                loadingTask.id === task.id &&
+                                loadingTask.action === "editing"
+                            }
                         />
                     ))}
 
@@ -594,8 +621,8 @@ const TaskBoard: React.FC = () => {
                                             className="w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                         >
                                             <option value="">Select tag</option>
-                                            {room?.tags?.map((tag) => (
-                                                <option key={tag} value={tag}>
+                                            {room?.tags?.map((tag, index) => (
+                                                <option key={index} value={tag}>
                                                     {tag}
                                                 </option>
                                             ))}
@@ -746,9 +773,17 @@ const TaskBoard: React.FC = () => {
                                     </button>
                                     <button
                                         type="submit"
-                                        className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium transition-all"
+                                        disabled={isSubmitting}
+                                        className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                     >
-                                        {isEditMode
+                                        {isSubmitting && (
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        )}
+                                        {isSubmitting
+                                            ? isEditMode
+                                                ? "Updating..."
+                                                : "Creating..."
+                                            : isEditMode
                                             ? "Update Task"
                                             : "Create Task"}
                                     </button>

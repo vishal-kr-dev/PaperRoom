@@ -20,7 +20,7 @@ router
 
 router
     .route("/:id")
-    .patch(validate(updateTaskSchema), verifyJWT, updateTask)
+    .put(validate(updateTaskSchema), verifyJWT, updateTask)
     .delete(verifyJWT, deleteTask);
 
 router.patch("/:id/complete", verifyJWT, markComplete);
