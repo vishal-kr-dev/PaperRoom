@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
     Card,
     CardContent,
@@ -44,80 +45,52 @@ interface CreateRoomForm {
     roomName: string;
     description: string;
     privacy: "public" | "private";
-    maxMembers: number;
-    tags: string[];
-}
-
-interface FormErrors {
-    [key: string]: string;
+    maxMembers: string;
+    tag1: string;
+    tag2: string;
+    tag3: string;
+    tag4: string;
+    tag5: string;
 }
 
 const RoomDiscoveryPage: React.FC = () => {
-    const [isJoining, setIsJoining] = useState(false);
-    const [isCreating, setIsCreating] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
     const setUser = useAuthStore((state) => state.setUser);
 
-    // Join room
-    const [joinForm, setJoinForm] = useState<JoinRoomForm>({
-        roomCode: "",
+    // Join room form
+    const joinForm = useForm<JoinRoomForm>({
+        defaultValues: {
+            roomCode: "",
+        },
     });
-    const [joinErrors, setJoinErrors] = useState<FormErrors>({});
 
-    // Create room
-    const [createForm, setCreateForm] = useState<CreateRoomForm>({
-        roomName: "",
-        description: "",
-        privacy: "public",
-        maxMembers: 5,
-        tags: [],
+    // Create room form
+    const createForm = useForm<CreateRoomForm>({
+        defaultValues: {
+            roomName: "",
+            description: "",
+            privacy: "public",
+            maxMembers: "5",
+            tag1: "",
+            tag2: "",
+            tag3: "",
+            tag4: "",
+            tag5: "",
+        },
     });
-    const [createErrors, setCreateErrors] = useState<FormErrors>({});
 
-    // Validation functions
-    const validateJoinForm = (data: JoinRoomForm): FormErrors => {
-        const errors: FormErrors = {};
-        if (!data.roomCode.trim()) {
-            errors.roomCode = "Room code is required";
-        }
-        return errors;
-    };
-
-    const validateCreateForm = (data: CreateRoomForm): FormErrors => {
-        const errors: FormErrors = {};
-        if (!data.roomName.trim()) {
-            errors.roomName = "Room name is required";
-        }
-        return errors;
-    };
-
-    const handleJoinRoom = async () => {
-        const errors = validateJoinForm(joinForm);
-        setJoinErrors(errors);
-
-        if (Object.keys(errors).length > 0) return;
-
-        setIsJoining(true);
-
+    const handleJoinRoom = async (data: JoinRoomForm) => {
         try {
             const response = await axiosInstance.post(
-                `/room/${joinForm.roomCode}/join`
+                `/room/${data.roomCode}/join`
             );
-            console.log("joined  ", response)
 
             if (response.status === 200) {
                 toast.success("Joined room successfully!");
-
-                await checkAuthStatus()
-                
-                setIsJoining(false);
-                setJoinForm({ roomCode: "" });
-                setJoinErrors({});
-
-                console.dir(user, {depth: null})
+                await checkAuthStatus();
+                joinForm.reset();
                 router.push("/dashboard");
             }
         } catch (error) {
@@ -127,67 +100,46 @@ const RoomDiscoveryPage: React.FC = () => {
             } else {
                 toast.error("Failed to join the room");
             }
-        } finally {
-            setIsJoining(false);
         }
     };
 
-    const handleCreateRoom = async () => {
-        const errors = validateCreateForm(createForm);
-        setCreateErrors(errors);
-
-        if (Object.keys(errors).length > 0) return;
-        setIsCreating(true);
-
+    const handleCreateRoom = async (data: CreateRoomForm) => {
         try {
-            const response = await axiosInstance.post(
-                "/room/create",
-                createForm
-            );
+            const tags = [
+                data.tag1,
+                data.tag2,
+                data.tag3,
+                data.tag4,
+                data.tag5,
+            ].filter((tag) => tag.trim().length > 0);
+
+            const roomData = {
+                roomName: data.roomName,
+                description: data.description,
+                privacy: data.privacy,
+                maxMembers: parseInt(data.maxMembers),
+                tags,
+            };
+
+            const response = await axiosInstance.post("/room/create", roomData);
 
             if (response.status === 201) {
                 toast.success("Room created successfully");
-                router.push("/dashboard")
-                if(user){
+                if (user) {
                     setUser({ ...user, roomId: response.data.data._id });
                 }
-                setCreateForm({
-                    roomName: "",
-                    description: "",
-                    privacy: "public",
-                    maxMembers: 5,
-                    tags: [],
-                });
-                setCreateErrors({});
+                createForm.reset();
+                setIsModalOpen(false);
+                router.push("/dashboard");
             }
         } catch (error) {
-            console.log(error)
+            console.log(error);
             let errorMessage = "Failed to create room!";
             if (error instanceof AxiosError && error.response?.status === 400) {
                 errorMessage = "User is already in a room";
-                router.push("/login")
+                router.push("/login");
             }
-
             toast.error(errorMessage);
-        } finally {
-            setIsCreating(false);
-            setIsModalOpen(false);
-        }
-    };
-
-    const updateJoinForm = (field: keyof JoinRoomForm, value: string) => {
-        setJoinForm((prev) => ({ ...prev, [field]: value }));
-        // Clear error when user starts typing
-        if (joinErrors[field]) {
-            setJoinErrors((prev) => ({ ...prev, [field]: "" }));
-        }
-    };
-
-    const updateCreateForm = (field: keyof CreateRoomForm, value: string | number | string[]) => {
-        setCreateForm((prev) => ({ ...prev, [field]: value }));
-        // Clear error when user starts typing
-        if (createErrors[field]) {
-            setCreateErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
 
@@ -224,53 +176,51 @@ const RoomDiscoveryPage: React.FC = () => {
                                 instantly
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label
-                                    htmlFor="roomCode"
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Room Code
-                                </Label>
-                                <Input
-                                    id="roomCode"
-                                    type="text"
-                                    placeholder="Enter room code..."
-                                    value={joinForm.roomCode}
-                                    onChange={(e) =>
-                                        updateJoinForm(
-                                            "roomCode",
-                                            e.target.value
-                                        )
-                                    }
-                                    className="h-12 text-lg border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
-                                    onKeyPress={(e) => {
-                                        if (e.key === "Enter") {
-                                            handleJoinRoom();
-                                        }
-                                    }}
-                                />
-                                {joinErrors.roomCode && (
-                                    <p className="text-sm text-red-500 dark:text-red-400">
-                                        {joinErrors.roomCode}
-                                    </p>
-                                )}
-                            </div>
-
-                            <Button
-                                onClick={handleJoinRoom}
-                                disabled={isJoining}
-                                className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl text-white"
+                        <CardContent>
+                            <form
+                                onSubmit={joinForm.handleSubmit(handleJoinRoom)}
+                                className="space-y-4"
                             >
-                                {isJoining ? (
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                        Joining...
-                                    </div>
-                                ) : (
-                                    "Join Room"
-                                )}
-                            </Button>
+                                <div className="space-y-2">
+                                    <Label
+                                        htmlFor="roomCode"
+                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                    >
+                                        Room Code *
+                                    </Label>
+                                    <Input
+                                        id="roomCode"
+                                        placeholder="Enter room code..."
+                                        className="h-12 text-lg border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                                        {...joinForm.register("roomCode", {
+                                            required: "Room code is required",
+                                        })}
+                                    />
+                                    {joinForm.formState.errors.roomCode && (
+                                        <p className="text-sm text-red-500 dark:text-red-400">
+                                            {
+                                                joinForm.formState.errors
+                                                    .roomCode.message
+                                            }
+                                        </p>
+                                    )}
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    disabled={joinForm.formState.isSubmitting}
+                                    className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl text-white"
+                                >
+                                    {joinForm.formState.isSubmitting ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            Joining...
+                                        </div>
+                                    ) : (
+                                        "Join Room"
+                                    )}
+                                </Button>
+                            </form>
                         </CardContent>
                     </Card>
 
@@ -319,48 +269,52 @@ const RoomDiscoveryPage: React.FC = () => {
                                             Create New Room
                                         </DialogTitle>
                                         <DialogDescription className="text-gray-600 dark:text-gray-300">
-                                            Set up your collaborative space with
-                                            custom settings and preferences.
+                                            Set up your collaborative space. All
+                                            fields are required.
                                         </DialogDescription>
                                     </DialogHeader>
 
-                                    <div className="space-y-6 py-4">
+                                    <form
+                                        onSubmit={createForm.handleSubmit(
+                                            handleCreateRoom
+                                        )}
+                                        className="space-y-6 py-4"
+                                    >
                                         {/* Basic Info */}
                                         <div className="space-y-4">
                                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600 pb-2">
                                                 Basic Information
                                             </h3>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label
-                                                        htmlFor="roomName"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >
-                                                        Room Name *
-                                                    </Label>
-                                                    <Input
-                                                        id="roomName"
-                                                        placeholder="Enter room name..."
-                                                        value={
-                                                            createForm.roomName
+                                            <div className="space-y-2">
+                                                <Label
+                                                    htmlFor="roomName"
+                                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                                >
+                                                    Room Name *
+                                                </Label>
+                                                <Input
+                                                    id="roomName"
+                                                    placeholder="Enter room name..."
+                                                    className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                    {...createForm.register(
+                                                        "roomName",
+                                                        {
+                                                            required:
+                                                                "Room name is required",
                                                         }
-                                                        onChange={(e) =>
-                                                            updateCreateForm(
-                                                                "roomName",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                    />
-                                                    {createErrors.roomName && (
-                                                        <p className="text-sm text-red-500 dark:text-red-400">
-                                                            {
-                                                                createErrors.roomName
-                                                            }
-                                                        </p>
                                                     )}
-                                                </div>
+                                                />
+                                                {createForm.formState.errors
+                                                    .roomName && (
+                                                    <p className="text-sm text-red-500 dark:text-red-400">
+                                                        {
+                                                            createForm.formState
+                                                                .errors.roomName
+                                                                .message
+                                                        }
+                                                    </p>
+                                                )}
                                             </div>
 
                                             <div className="space-y-2">
@@ -368,85 +322,86 @@ const RoomDiscoveryPage: React.FC = () => {
                                                     htmlFor="description"
                                                     className="text-sm font-medium text-gray-700 dark:text-gray-300"
                                                 >
-                                                    Description
+                                                    Description *
                                                 </Label>
                                                 <Textarea
                                                     id="description"
                                                     placeholder="Describe what this room is about..."
-                                                    value={
-                                                        createForm.description
-                                                    }
-                                                    onChange={(e) =>
-                                                        updateCreateForm(
-                                                            "description",
-                                                            e.target.value
-                                                        )
-                                                    }
                                                     className="min-h-[80px] resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                    {...createForm.register(
+                                                        "description",
+                                                        {
+                                                            required:
+                                                                "Description is required",
+                                                        }
+                                                    )}
                                                 />
+                                                {createForm.formState.errors
+                                                    .description && (
+                                                    <p className="text-sm text-red-500 dark:text-red-400">
+                                                        {
+                                                            createForm.formState
+                                                                .errors
+                                                                .description
+                                                                .message
+                                                        }
+                                                    </p>
+                                                )}
                                             </div>
 
                                             <div className="space-y-2">
-                                                <div className="space-y-2">
-                                                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        Tags *
-                                                        <span className=" text-gray-500 dark:text-gray-400">
-                                                            (one per field,
-                                                            total 5)
-                                                        </span>
-                                                    </Label>
-                                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
-                                                        {[0, 1, 2, 3, 4].map(
-                                                            (idx) => (
-                                                                <Input
-                                                                    key={idx}
-                                                                    type="text"
-                                                                    placeholder={`Tag ${
-                                                                        idx + 1
-                                                                    }`}
-                                                                    value={
+                                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Tags * (All 5 tags are
+                                                    required)
+                                                </Label>
+                                                <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+                                                    {(
+                                                        [
+                                                            "tag1",
+                                                            "tag2",
+                                                            "tag3",
+                                                            "tag4",
+                                                            "tag5",
+                                                        ] as const
+                                                    ).map((tagKey, idx) => (
+                                                        <div
+                                                            key={tagKey}
+                                                            className="space-y-1"
+                                                        >
+                                                            <Input
+                                                                placeholder={`Tag ${
+                                                                    idx + 1
+                                                                }`}
+                                                                className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                                maxLength={20}
+                                                                {...createForm.register(
+                                                                    tagKey,
+                                                                    {
+                                                                        required: `Tag ${
+                                                                            idx +
+                                                                            1
+                                                                        } is required`,
+                                                                    }
+                                                                )}
+                                                            />
+                                                            {createForm
+                                                                .formState
+                                                                .errors[
+                                                                tagKey
+                                                            ] && (
+                                                                <p className="text-xs text-red-500 dark:text-red-400">
+                                                                    {
                                                                         createForm
-                                                                            .tags[
-                                                                            idx
-                                                                        ] || ""
+                                                                            .formState
+                                                                            .errors[
+                                                                            tagKey
+                                                                        ]
+                                                                            ?.message
                                                                     }
-                                                                    onChange={(
-                                                                        e
-                                                                    ) => {
-                                                                        const newTags =
-                                                                            [
-                                                                                ...createForm.tags,
-                                                                            ];
-                                                                        newTags[
-                                                                            idx
-                                                                        ] =
-                                                                            e.target.value;
-                                                                        updateCreateForm(
-                                                                            "tags",
-                                                                            newTags
-                                                                                .map(
-                                                                                    (
-                                                                                        tag
-                                                                                    ) =>
-                                                                                        tag.trim()
-                                                                                )
-                                                                                .filter(
-                                                                                    (
-                                                                                        tag
-                                                                                    ) =>
-                                                                                        tag.length >
-                                                                                        0
-                                                                                )
-                                                                        );
-                                                                    }}
-                                                                    className="h-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                                    maxLength={
-                                                                        20
-                                                                    }
-                                                                />
-                                                            )
-                                                        )}
-                                                    </div>
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
@@ -460,18 +415,18 @@ const RoomDiscoveryPage: React.FC = () => {
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
                                                     <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        Privacy Level
+                                                        Privacy Level *
                                                     </Label>
                                                     <Select
-                                                        value={
-                                                            createForm.privacy
-                                                        }
+                                                        value={createForm.watch(
+                                                            "privacy"
+                                                        )}
                                                         onValueChange={(
                                                             value:
                                                                 | "public"
                                                                 | "private"
                                                         ) =>
-                                                            updateCreateForm(
+                                                            createForm.setValue(
                                                                 "privacy",
                                                                 value
                                                             )
@@ -483,7 +438,7 @@ const RoomDiscoveryPage: React.FC = () => {
                                                         <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                                                             <SelectItem
                                                                 value="public"
-                                                                className="dark:text-white dark:focus:bg-grayF-700"
+                                                                className="dark:text-white dark:focus:bg-gray-700"
                                                             >
                                                                 <div className="flex items-center gap-2">
                                                                     <Globe className="w-4 h-4" />
@@ -507,22 +462,19 @@ const RoomDiscoveryPage: React.FC = () => {
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label
-                                                        htmlFor="maxMembers"
-                                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                                    >
-                                                        Max Members
+                                                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        Max Members *
                                                     </Label>
                                                     <Select
-                                                        value={
-                                                            String(createForm.maxMembers)
-                                                        }
+                                                        value={createForm.watch(
+                                                            "maxMembers"
+                                                        )}
                                                         onValueChange={(
                                                             value
                                                         ) =>
-                                                            updateCreateForm(
+                                                            createForm.setValue(
                                                                 "maxMembers",
-                                                                Number(value)
+                                                                value
                                                             )
                                                         }
                                                     >
@@ -553,37 +505,45 @@ const RoomDiscoveryPage: React.FC = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
-                                        <Button
-                                            variant="outline"
-                                            onClick={() =>
-                                                setIsModalOpen(false)
-                                            }
-                                            className="flex-1 h-11 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                                            disabled={isCreating}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            onClick={handleCreateRoom}
-                                            disabled={isCreating}
-                                            className="flex-1 h-11 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 text-white"
-                                        >
-                                            {isCreating ? (
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                                    Creating Room...
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-2">
-                                                    <Plus className="w-4 h-4" />
-                                                    Create Room
-                                                </div>
-                                            )}
-                                        </Button>
-                                    </div>
+                                        <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    setIsModalOpen(false)
+                                                }
+                                                className="flex-1 h-11 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                                                disabled={
+                                                    createForm.formState
+                                                        .isSubmitting
+                                                }
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="submit"
+                                                disabled={
+                                                    createForm.formState
+                                                        .isSubmitting
+                                                }
+                                                className="flex-1 h-11 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 text-white"
+                                            >
+                                                {createForm.formState
+                                                    .isSubmitting ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                        Creating Room...
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2">
+                                                        <Plus className="w-4 h-4" />
+                                                        Create Room
+                                                    </div>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </form>
                                 </DialogContent>
                             </Dialog>
                         </CardContent>
