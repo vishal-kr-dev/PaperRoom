@@ -133,7 +133,7 @@ const RoomDiscoveryPage: React.FC = () => {
                 router.push("/dashboard");
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
             let errorMessage = "Failed to create room!";
             if (error instanceof AxiosError && error.response?.status === 400) {
                 errorMessage = "User is already in a room";

@@ -39,7 +39,7 @@ export const useAuthStore = create<AuthStore>()(
                 try {
                     await axiosInstance.post("/auth/logout");
                 } catch (err) {
-                    console.log("Something went wrong while login out: ", err);
+                    console.error("Something went wrong while login out: ", err);
                 }
                 set({
                     user: null,

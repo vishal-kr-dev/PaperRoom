@@ -50,7 +50,7 @@ export const ActivityStats: React.FC<ActivityStatsProps> = ({
         }
     };
 
-    const getActionIconDetails = (action: String) => {
+    const getActionIconDetails = (action: string) => {
         switch (action) {
             case "created":
                 return { icon: Plus, color: "text-blue-500" };

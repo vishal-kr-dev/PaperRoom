@@ -5,8 +5,6 @@ import {
     ActivityFilters,
     PaginationInfo,
     ActivityStats,
-    UserActivitiesResponse,
-    ActivityStatsResponse,
 } from "@/types/userActivity";
 import axiosInstance from "@/lib/axiosInstance";
 
@@ -66,7 +64,6 @@ export const useUserActivityStore = create<UserActivityState>()(
                     const response = await axiosInstance(
                         `/user-activities?${queryParams}`
                     );
-                    console.log("User activity\n", response.data.data);
 
                     if (response.status !== 200) {
                         throw new Error(

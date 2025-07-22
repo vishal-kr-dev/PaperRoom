@@ -10,6 +10,7 @@ import {
     Shredder,
     Trophy,
 } from "lucide-react";
+import Image from "next/image";
 
 interface ActivityItemProps {
     activity: UserActivity;
@@ -70,7 +71,6 @@ const getPriorityColor = (priority?: string) => {
 
 export const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
     const user = typeof activity.userId === "object" ? activity.userId : null;
-    const room = typeof activity.roomId === "object" ? activity.roomId : null;
     const task = typeof activity.taskId === "object" ? activity.taskId : null;
 
     const getActionText = () => {
@@ -160,7 +160,7 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
             {/* User Avatar */}
             {user?.avatar && (
                 <div className="flex-shrink-0">
-                    <img
+                    <Image
                         className="w-8 h-8 rounded-full"
                         src={user.avatar}
                         alt={user.username}

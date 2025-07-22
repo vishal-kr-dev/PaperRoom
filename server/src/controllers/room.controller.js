@@ -26,7 +26,6 @@ const createRoom = asyncHandler(async (req, res) => {
     const { roomName, description, maxMembers, tags, privacy } = req.body;
     const user = req.user
 
-    console.log("Room creation request received")
 
     if (user?.roomId) {
         throw new APIerror(400, "User already belongs to a room");
@@ -139,8 +138,6 @@ const leaveRoom = asyncHandler(async (req, res) => {
     room.members = room.members.filter(
         (id) => id.toString() !== userId.toString()
     );
-    console.log(userId);
-    console.log(room.members);
     await room.save();
 
     req.user.roomId = null;

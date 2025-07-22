@@ -3,11 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useUserActivityStore } from "@/stores/userActivityStore";
 import { ActivityItem } from "./ActivityItem";
-// import { ActivityFilters } from "./ActivityFilters";
 import { Pagination } from "./Pagination";
-// import { LoadingSpinner } from "./LoadingSpinner";
 import LoadingSpinner from "./LoadingSpinner";
-import { ActionType } from "@/types/userActivity";
 
 interface ActivityListProps {
     userId?: string;
@@ -32,9 +29,6 @@ export const ActivityList: React.FC<ActivityListProps> = ({
         setFilters,
         clearError,
     } = useUserActivityStore();
-    console.log(
-        "Activities \n", activities
-    )
 
     const [localFilters, setLocalFilters] = useState({
         action: filters.action || "",
@@ -49,13 +43,16 @@ export const ActivityList: React.FC<ActivityListProps> = ({
             ...(roomId && { roomId }),
         };
         fetchActivities(initialFilters);
-    }, [fetchActivities, userId, roomId]);
+    }, [fetchActivities, userId, roomId, filters]);
 
     const handleFilterChange = (key: string, value: string) => {
         const newFilters = { ...localFilters, [key]: value };
         setLocalFilters(newFilters);
 
-        const filterUpdate: any = { [key]: value || undefined, page: 1 };
+        const filterUpdate: Record<string, string | undefined | number> = {
+            [key]: value || undefined,
+            page: 1,
+        };
         setFilters(filterUpdate);
     };
 
