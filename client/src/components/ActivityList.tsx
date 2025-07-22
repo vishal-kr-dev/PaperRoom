@@ -43,7 +43,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
             ...(roomId && { roomId }),
         };
         fetchActivities(initialFilters);
-    }, [fetchActivities, userId, roomId, filters]);
+    }, [fetchActivities, userId, roomId]);
 
     const handleFilterChange = (key: string, value: string) => {
         const newFilters = { ...localFilters, [key]: value };
