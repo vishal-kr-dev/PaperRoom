@@ -57,7 +57,6 @@ const createNewTask = asyncHandler(async (req, res) => {
                     tag: task.tag,
                     priority: task.priority,
                     dailyTask: task.dailyTask,
-                    xp: task.xp,
                 },
             });
 
@@ -180,7 +179,6 @@ const updateTask = asyncHandler(async (req, res) => {
                     tag: updatedTask.tag,
                     priority: updatedTask.priority,
                     dailyTask: updatedTask.dailyTask,
-                    xp: updatedTask.xp,
                 },
             });
 
@@ -271,7 +269,6 @@ const deleteTask = asyncHandler(async (req, res) => {
                     tag: deletedTask.tag,
                     priority: deletedTask.priority,
                     dailyTask: deletedTask.dailyTask,
-                    xp: deletedTask.xp,
                 },
             });
 

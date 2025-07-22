@@ -14,6 +14,7 @@ import {
     // User,
     // Settings,
     LogOut,
+    History,
     // UsersRound,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -28,6 +29,7 @@ const Sidebar = () => {
     const navItems = [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { href: "/tasks", label: "Tasks", icon: ClipboardList },
+        { href: "/activities", label: "Activities", icon: History },
         // { href: "/analytics", label: "Analytics", icon: LineChart },
         // { href: "/members", label: "Members", icon: Users },
         // { href: "/notifications", label: "Notifications", icon: Bell },

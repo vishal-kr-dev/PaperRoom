@@ -44,6 +44,7 @@ const userActivitySchema = new Schema(
             },
             xp: {
                 type: Number,
+                default: 0
             },
         },
     },

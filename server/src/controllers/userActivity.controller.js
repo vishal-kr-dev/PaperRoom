@@ -37,7 +37,6 @@ const getUserActivities = asyncHandler(async (req, res) => {
     const [activities, total] = await Promise.all([
         UserActivity.find(query)
             .populate("userId", "username email avatar")
-            .populate("roomId", "name description")
             .populate("taskId", "title description status")
             .sort(sort)
             .skip(skip)
