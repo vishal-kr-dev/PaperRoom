@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth.routes.js";
 import roomRouter from "./routes/room.routes.js"
 import tasksRouter from "./routes/task.routes.js";
 import userRouter from "./routes/user.routes.js"
+import userActivityRoutes from "./routes/userActivity.routes.js"
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/room", roomRouter)
 app.use("/api/v1/tasks", tasksRouter)
 app.use("/api/v1/user", userRouter)
+app.use("/api/v1/user-activities", userActivityRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
