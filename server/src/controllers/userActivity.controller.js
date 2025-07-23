@@ -12,11 +12,11 @@ const getUserActivities = asyncHandler(async (req, res) => {
         sortOrder = "desc",
     } = req.query;
 
-    const userId = req.user._id;
     const roomId = req.user.roomId;
 
-    if (!userId || !roomId) {
-        throw new APIerror(404, "User or Room not found");
+
+    if (!roomId) {
+        throw new APIerror(404, "Room id not found");
     }
 
     const pageNumber = parseInt(page);
@@ -25,7 +25,6 @@ const getUserActivities = asyncHandler(async (req, res) => {
 
     // Build query object
     const query = {};
-    if (userId) query.userId = userId;
     if (roomId) query.roomId = roomId;
     if (action) query.action = action;
 
@@ -46,7 +45,7 @@ const getUserActivities = asyncHandler(async (req, res) => {
     ]);
 
     if (!activities || activities.length === 0) {
-        return sendResponse(res, 404, null, "No user activities found");
+        return sendResponse(res, 404, [], "No user activities found");
     }
     
     const totalPages = Math.ceil(total / limitNumber);
@@ -66,17 +65,17 @@ const getUserActivities = asyncHandler(async (req, res) => {
             prevPage: hasPrevPage ? pageNumber - 1 : null,
         },
     };
+    console.log(data)
 
     return sendResponse(res, 200, data, "User activities fetched successfully");
 });
 
 const getUserActivityStats = asyncHandler(async (req, res) => {
     const { timeframe = "7d" } = req.query;
-    const userId = req.user._id;
     const roomId = req.user.roomId;
 
-    if (!userId || !roomId) {
-        throw new APIerror(404, "User or Room not found");
+    if (!roomId) {
+        throw new APIerror(404, "Room id not found");
     }
 
     // Calculate date range based on timeframe
@@ -101,7 +100,6 @@ const getUserActivityStats = asyncHandler(async (req, res) => {
         createdAt: { $gte: startDate },
     };
 
-    if (userId) query.userId = userId;
     if (roomId) query.roomId = roomId;
 
     const stats = await UserActivity.aggregate([
