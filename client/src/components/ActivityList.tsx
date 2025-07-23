@@ -135,10 +135,10 @@ export const ActivityList: React.FC<ActivityListProps> = ({
                                 <option value="completed">Completed</option>
                                 <option value="updated">Updated</option>
                                 <option value="deleted">Deleted</option>
-                                <option value="archived">Archived</option>
+                                {/* <option value="archived">Archived</option>
                                 <option value="earned_badge">
                                     Earned Badge
-                                </option>
+                                </option> */}
                             </select>
                         </div>
 

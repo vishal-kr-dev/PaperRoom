@@ -10,10 +10,7 @@ import { User } from "../models/User.model.js";
 const getRoomData = asyncHandler(async (req, res) => {
     const roomId = req.user.roomId;
 
-    const room = await Room.findOne({ _id: roomId }).populate(
-        "members",
-        "username email avatar"
-    );
+    const room = await Room.findOne({ _id: roomId }).populate("members","username email avatar").populate("ownerId","username email avatar")
 
     if (!room) {
         throw new APIerror(404, "Room not found");

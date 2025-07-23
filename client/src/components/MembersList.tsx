@@ -4,12 +4,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Member } from "@/types/room";
-
-
+import { User } from "@/types/room";
 
 interface MembersListProps {
-    members?: Member[];
+    members?: User[];
     className?: string;
     maxHeight?: string;
     isLoading?: boolean;

@@ -15,6 +15,7 @@ import {
     // Settings,
     LogOut,
     History,
+    UsersRound,
     // UsersRound,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -31,9 +32,8 @@ const Sidebar = () => {
         { href: "/tasks", label: "Tasks", icon: ClipboardList },
         { href: "/activities", label: "Activities", icon: History },
         // { href: "/analytics", label: "Analytics", icon: LineChart },
-        // { href: "/members", label: "Members", icon: Users },
         // { href: "/notifications", label: "Notifications", icon: Bell },
-        // { href: "/room", label: "Room", icon: UsersRound },
+        { href: "/room", label: "Room", icon: UsersRound },
         // { href: "/profile", label: "Profile", icon: User },
         // { href: "/settings", label: "Settings", icon: Settings },
     ];

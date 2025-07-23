@@ -65,7 +65,6 @@ const getUserActivities = asyncHandler(async (req, res) => {
             prevPage: hasPrevPage ? pageNumber - 1 : null,
         },
     };
-    console.log(data)
 
     return sendResponse(res, 200, data, "User activities fetched successfully");
 });

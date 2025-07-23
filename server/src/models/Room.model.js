@@ -52,7 +52,10 @@ const roomSchema = new Schema({
         {
             token: { type: String, required: true },
             createdAt: { type: Date, default: Date.now },
-            expiresAt: Date,
+            expiresAt: {
+                type: Date,
+                default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            },
         },
     ],
     createdAt: {
