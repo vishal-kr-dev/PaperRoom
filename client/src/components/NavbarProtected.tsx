@@ -5,8 +5,8 @@ import Image from "next/image";
 import { useUIStore } from "@/stores/uiStore";
 import { Button } from "./ui/button";
 import { Moon, Sun, Menu, X, Bell } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useAuthStore } from "@/stores/authStore";
+import { UserAvatar } from "./UserAvatara";
 
 const NavbarProtected = () => {
     const router = useRouter();
@@ -62,16 +62,7 @@ const NavbarProtected = () => {
                         )}
                     </Button>
 
-                    <Avatar className="w-8 h-8 hidden md:block">
-                        <AvatarImage
-                            src={user?.avatar}
-                            alt={user?.username}
-                            className="object-cover"
-                        />
-                        <AvatarFallback>
-                            {user?.username?.[0]?.toUpperCase() || "G"}
-                        </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar username={user?.username} className="hidden lg:block" />
                 </div>
             </div>
         </nav>

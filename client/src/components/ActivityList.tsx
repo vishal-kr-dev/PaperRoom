@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useUserActivityStore } from "@/stores/userActivityStore";
 import { ActivityItem } from "./ActivityItem";
 import { Pagination } from "./Pagination";
@@ -36,14 +36,19 @@ export const ActivityList: React.FC<ActivityListProps> = ({
         sortOrder: filters.sortOrder || "desc",
     });
 
+    const hasFetched = useRef(false)
+
     useEffect(() => {
+        if(hasFetched.current) return;
+        hasFetched.current = true;
+        
         const initialFilters = {
             ...filters,
             ...(userId && { userId }),
             ...(roomId && { roomId }),
         };
         fetchActivities(initialFilters);
-    }, [fetchActivities, userId, roomId]);
+    }, [fetchActivities, userId, roomId, filters]);
 
     const handleFilterChange = (key: string, value: string) => {
         const newFilters = { ...localFilters, [key]: value };

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useAuthStore } from "@/stores/authStore";
 import { useUIStore } from "@/stores/uiStore";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
     LayoutDashboard,
@@ -19,6 +18,7 @@ import {
     // UsersRound,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { UserAvatar } from "./UserAvatara";
 
 const Sidebar = () => {
 
@@ -96,16 +96,7 @@ const Sidebar = () => {
 
                 <div className="mt-auto p-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center space-x-3 mb-4">
-                        <Avatar className="w-10 h-10">
-                            <AvatarImage
-                                src={user?.avatar}
-                                alt={user?.username}
-                                className="object-cover"
-                            />
-                            <AvatarFallback>
-                                {user?.username?.[0]?.toUpperCase() || "G"}
-                            </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar username={user?.username} />
                         <div className="flex flex-col truncate">
                             <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                                 {user?.username || "Guest User"}

@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { InviteTokens, Room } from "@/types/room";
 import { useRoomStore } from "@/stores/roomStore";
+import { UserAvatar } from "@/components/UserAvatara";
 
 export default function RoomDetailsPage() {
     const [copied, setCopied] = useState<string | null>(null);
@@ -231,12 +232,8 @@ export default function RoomDetailsPage() {
                                 {/* Room Owner */}
                                 <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-yellow-50 via-amber-50 to-orange-50 dark:from-yellow-900/20 dark:via-amber-900/20 dark:to-orange-900/20 rounded-xl border-2 border-yellow-200/50 dark:border-yellow-700/50 shadow-sm hover:shadow-md transition-all duration-200">
                                     <div className="relative">
-                                        <img
-                                            src={
-                                                room?.ownerId.avatar ||
-                                                `https://api.dicebear.com/7.x/avataaars/svg?seed=${room?.ownerId.username}`
-                                            }
-                                            alt={room?.ownerId.username}
+                                        <UserAvatar
+                                            username={room?.ownerId.username}
                                             className="h-10 w-10 rounded-full ring-3 ring-yellow-300 dark:ring-yellow-600 shadow-md"
                                         />
                                         <div className="absolute -top-0.5 -right-0.5 p-0.5 bg-yellow-400 dark:bg-yellow-500 rounded-full shadow-lg">
@@ -260,35 +257,34 @@ export default function RoomDetailsPage() {
 
                                 {/* Regular Members */}
                                 {room?.members
-                                .filter((member)=> member._id !== room?.ownerId._id)
-                                .map((member) => (
-                                    <div
-                                        key={member._id}
-                                        className="flex items-center space-x-4 p-4 hover:bg-gray-50/80 dark:hover:bg-gray-700/30 rounded-xl transition-all duration-200 group border border-transparent hover:border-gray-200/50 dark:hover:border-gray-600/50"
-                                    >
-                                        <div className="relative">
-                                            <img
-                                                src={
-                                                    member.avatar ||
-                                                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.username}`
-                                                }
-                                                alt={member.username}
-                                                className="h-10 w-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-blue-300 dark:group-hover:ring-blue-500 transition-all duration-200 shadow-md"
-                                            />
+                                    .filter(
+                                        (member) =>
+                                            member._id !== room?.ownerId._id
+                                    )
+                                    .map((member) => (
+                                        <div
+                                            key={member._id}
+                                            className="flex items-center space-x-4 p-4 hover:bg-gray-50/80 dark:hover:bg-gray-700/30 rounded-xl transition-all duration-200 group border border-transparent hover:border-gray-200/50 dark:hover:border-gray-600/50"
+                                        >
+                                            <div className="relative">
+                                                <UserAvatar
+                                                    username={member.username}
+                                                    className="h-10 w-10 rounded-full ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-blue-300 dark:group-hover:ring-blue-500 transition-all duration-200 shadow-md"
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-bold text-gray-900 dark:text-gray-100 mb-0.5">
+                                                    {member.username}
+                                                </p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                                    {member.email}
+                                                </p>
+                                            </div>
+                                            <button className="opacity-0 group-hover:opacity-100 p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all duration-200">
+                                                <MoreHorizontal className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                            </button>
                                         </div>
-                                        <div className="flex-1">
-                                            <p className="font-bold text-gray-900 dark:text-gray-100 mb-0.5">
-                                                {member.username}
-                                            </p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                                {member.email}
-                                            </p>
-                                        </div>
-                                        <button className="opacity-0 group-hover:opacity-100 p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all duration-200">
-                                            <MoreHorizontal className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                        </button>
-                                    </div>
-                                )) || []}
+                                    )) || []}
                             </div>
                         </div>
                     </div>
@@ -327,7 +323,11 @@ export default function RoomDetailsPage() {
                                             </span>
                                         </div>
                                         <span className="font-bold text-purple-600 dark:text-purple-400 text-sm">
-                                            {room?.createdAt ? getRelativeTime(room.createdAt) : 'Unknown'}
+                                            {room?.createdAt
+                                                ? getRelativeTime(
+                                                      room.createdAt
+                                                  )
+                                                : "Unknown"}
                                         </span>
                                     </div>
                                 </div>

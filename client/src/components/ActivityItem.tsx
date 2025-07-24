@@ -12,6 +12,7 @@ import {
     Clock,
     Star,
 } from "lucide-react";
+import { UserAvatar } from "./UserAvatara";
 
 interface ActivityItemProps {
     activity: UserActivity;
@@ -177,10 +178,9 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
                         {user?.avatar && (
                             <div className="flex-shrink-0">
                                 <div className="relative">
-                                    <img
-                                        className="w-10 h-10 rounded-full ring-2 ring-white dark:ring-gray-700 shadow-sm transition-transform duration-200 group-hover:scale-105"
-                                        src={user.avatar}
-                                        alt={user.username}
+                                    <UserAvatar
+                                        className="transition-transform duration-200 group-hover:scale-105"
+                                        username={user.username}
                                     />
                                     <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent to-white/20 dark:to-gray-800/20"></div>
                                 </div>

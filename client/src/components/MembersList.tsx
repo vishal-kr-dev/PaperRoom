@@ -1,10 +1,10 @@
 import React from "react";
 import { Users } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { User } from "@/types/room";
+import { UserAvatar } from "./UserAvatara";
 
 interface MembersListProps {
     members?: User[];
@@ -76,17 +76,7 @@ const MembersList: React.FC<MembersListProps> = ({
                                     transition={{ duration: 0.2 }}
                                     className="flex items-center space-x-3 rounded-lg p-3"
                                 >
-                                    <Avatar className="h-10 w-10 border">
-                                        <AvatarImage
-                                            src={member.avatar}
-                                            alt={member.username}
-                                        />
-                                        <AvatarFallback>
-                                            {member.username
-                                                .charAt(0)
-                                                .toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
+                                    <UserAvatar username={member.username} />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-foreground truncate">
                                             {member.username}

@@ -232,7 +232,7 @@ export const ActivityStats: React.FC<ActivityStatsProps> = ({
 
                         <div className="grid gap-4">
                             {stats.actionCounts.map(
-                                ({ action, count, totalXP }) => {
+                                ({ action, count }) => {
                                     const {
                                         icon: Icon,
                                         color,
@@ -288,12 +288,6 @@ export const ActivityStats: React.FC<ActivityStatsProps> = ({
                                                     <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
                                                         {count}
                                                     </p>
-                                                    {totalXP > 0 && (
-                                                        <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-700">
-                                                            <Trophy className="w-3 h-3 mr-1" />
-                                                            +{totalXP} XP
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </div>
                                         </div>

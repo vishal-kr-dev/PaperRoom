@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
     Plus,
     Trophy,
     Calendar,
     Star,
-    Trash2,
+    // Trash2,
     Check,
     Clock,
     AlertTriangle,
@@ -152,7 +152,7 @@ const TaskBoard: React.FC = () => {
     const {
         register,
         handleSubmit,
-        control,
+        // control,
         reset,
         watch,
         formState: { errors },
@@ -169,14 +169,14 @@ const TaskBoard: React.FC = () => {
         },
     });
 
-    const {
-        fields: subtaskFields,
-        append: appendSubtask,
-        remove: removeSubtask,
-    } = useFieldArray({
-        control,
-        name: "subtasks",
-    });
+    // const {
+    //     fields: subtaskFields,
+    //     append: appendSubtask,
+    //     remove: removeSubtask,
+    // } = useFieldArray({
+    //     control,
+    //     name: "subtasks",
+    // });
 
     const watchedValues = watch();
 
@@ -694,7 +694,7 @@ const TaskBoard: React.FC = () => {
                                     </label>
                                 </div>
 
-                                <div>
+                                {/* <div>
                                     <div className="flex items-center justify-between mb-3">
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Subtasks
@@ -755,7 +755,7 @@ const TaskBoard: React.FC = () => {
                                             </div>
                                         ))}
                                     </div>
-                                </div>
+                                </div> */}
 
                                 <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                                     <button
