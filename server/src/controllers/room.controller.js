@@ -6,11 +6,14 @@ import crypto from "crypto";
 import { createRoomCode } from "../utils/room/CreateRoomCode.js";
 import { APIerror } from "../utils/APIerror.js";
 import { User } from "../models/User.model.js";
+import { PushSubscription } from "../models/PushSubscription.model.js";
 
 const getRoomData = asyncHandler(async (req, res) => {
     const roomId = req.user.roomId;
 
-    const room = await Room.findOne({ _id: roomId }).populate("members","username email avatar").populate("ownerId","username email avatar")
+    const room = await Room.findOne({ _id: roomId })
+        .populate("members", "username email avatar")
+        .populate("ownerId", "username email avatar");
 
     if (!room) {
         throw new APIerror(404, "Room not found");
@@ -21,8 +24,7 @@ const getRoomData = asyncHandler(async (req, res) => {
 
 const createRoom = asyncHandler(async (req, res) => {
     const { roomName, description, maxMembers, tags, privacy } = req.body;
-    const user = req.user
-
+    const user = req.user;
 
     if (user?.roomId) {
         throw new APIerror(400, "User already belongs to a room");
@@ -114,7 +116,6 @@ const joinRoom = asyncHandler(async (req, res) => {
     return sendResponse(res, 200, { roomCode }, "Joined room successfully");
 });
 
-
 const leaveRoom = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const roomId = req.user?.roomId;
@@ -139,6 +140,8 @@ const leaveRoom = asyncHandler(async (req, res) => {
 
     req.user.roomId = null;
     await req.user.save();
+
+    await PushSubscription.deleteMany({ userId });
 
     return sendResponse(res, 200, null, "Left the room successfully");
 });

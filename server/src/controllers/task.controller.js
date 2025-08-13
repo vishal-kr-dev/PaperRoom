@@ -12,6 +12,7 @@ import { Room } from "../models/Room.model.js";
 import { DailyStats } from "../models/DailyStats.model.js";
 import { User } from "../models/User.model.js";
 import { getISTMidnightDate } from "../utils/getISTMidnightDate.js";
+import { sendNotificationToRoom } from "../services/pushService.js";
 
 const createNewTask = asyncHandler(async (req, res) => {
     const { title, description, subtasks, tag, priority, dailyTask, deadline } =
@@ -97,7 +98,7 @@ const getAllTasks = asyncHandler(async (req, res) => {
 
             if (isNotUpdatedToday && task.completedBy.length > 0) {
                 task.completedBy = [];
-                task.updatedAt = new Date(); 
+                task.updatedAt = new Date();
                 await task.save();
             }
         }
@@ -124,7 +125,6 @@ const getAllTasks = asyncHandler(async (req, res) => {
         "Tasks fetched successfully"
     );
 });
-
 
 const updateTask = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -471,6 +471,16 @@ const markComplete = asyncHandler(async (req, res) => {
         });
 
         const updatedTask = await Task.findById(id);
+
+        // Send notification to all
+        sendNotificationToRoom(user.roomId, {
+            title: "Task Completed 🎉",
+            body: `${user.username} completed ${updatedTask.title}`,
+            data: {
+                url: "/activities",
+            },
+        });        
+
         return sendResponse(
             res,
             200,
