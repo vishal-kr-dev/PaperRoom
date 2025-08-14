@@ -1,3 +1,5 @@
+"use client"
+
 import axiosInstance from "@/lib/axiosInstance";
 import { registerPush } from "@/lib/registerPush";
 import { useEffect, useState } from "react";
