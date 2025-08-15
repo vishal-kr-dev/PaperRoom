@@ -58,12 +58,17 @@ axiosInstance.interceptors.response.use(
                         useAuthStore.getState().logout();
                     }
 
-                    if (
-                        typeof window !== "undefined" &&
-                        window.location.pathname !== "/" &&
-                        window.location.pathname !== "/login"
-                    ) {
-                        window.location.href = "/login";
+                    if (typeof window !== "undefined") {
+                        const currentPath =
+                            window.location.pathname + window.location.search;
+                        if (
+                            window.location.pathname !== "/" &&
+                            window.location.pathname !== "/login"
+                        ) {
+                            window.location.href = `/login?redirect=${encodeURIComponent(
+                                currentPath
+                            )}`;
+                        }
                     }
 
                     break;

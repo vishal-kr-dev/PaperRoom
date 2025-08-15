@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authService } from "@/services/authService"; 
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,9 @@ const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-export default function LoginPage() {
+function LoginPageInner() {
     const router = useRouter();
+    const searchParams = useSearchParams()
     const { shouldShowLoader, shouldShowContent } = useAuthRedirect();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -51,8 +52,15 @@ export default function LoginPage() {
 
             if(!user.roomId){
                 router.push("/join")
-            } else{
-                router.push("/dashboard")
+            }
+
+            if(user){
+                const redirect = searchParams.get("redirect")
+                if(redirect){
+                    router.push(redirect)
+                }else{
+                    router.push("/dashboard")
+                }
             }
         } catch (err: unknown) {
             toast.error("Invalid credentials. Please try again.");
@@ -155,5 +163,13 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage(){
+    return (
+        <Suspense fallback={<LoadingSpinner/>}>
+            <LoginPageInner />
+        </Suspense>
     );
 }
