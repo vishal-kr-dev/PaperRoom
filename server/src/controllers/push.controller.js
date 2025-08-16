@@ -1,4 +1,5 @@
 import { PushSubscription } from "../models/PushSubscription.model.js";
+import { sendNotificationToUser } from "../services/pushService.js";
 import { APIerror } from "../utils/APIerror.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { sendResponse } from "../utils/sendResponse.js";
@@ -29,7 +30,7 @@ const subscribe = asyncHandler(async (req, res) => {
             },
         },
         {
-            upsert: true, 
+            upsert: true,
             new: true,
         }
     );
@@ -43,17 +44,47 @@ const subscribe = asyncHandler(async (req, res) => {
 });
 
 const unsubscribe = asyncHandler(async (req, res) => {
-    
     await PushSubscription.deleteOne({ userId: req.user._id });
 
-    return sendResponse(
-        res,
-        200,
-        {},
-        "Unsubscribed successfully"
-    );
+    return sendResponse(res, 200, {}, "Unsubscribed successfully");
 });
 
+const testSubscription = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
 
+    if(!userId){
+        return sendResponse(
+            res,
+            404,
+            {},
+            "User not found"
+        );
+    }
+    
+    const payload = {
+        title: "🔔 Test Notification",
+        body: "Push notifications are working correctly!",
+        icon: "/icon-192x192.png",
+        badge: "/badge-72x72.png",
+        data: {
+            type: "test",
+            timestamp: new Date().toISOString(),
+            url: "/settings",
+        },
+    };
 
-export { getPublicKey, subscribe, unsubscribe };
+    const result = await sendNotificationToUser(userId, payload);
+
+    if (result.sent === 0) {
+        return sendResponse(
+            res,
+            404,
+            {},
+            "No active subscriptions found for your account"
+        );
+    }
+
+    return sendResponse(res, 200, {}, "Test notification sent successfully");
+});
+
+export { getPublicKey, subscribe, unsubscribe, testSubscription };

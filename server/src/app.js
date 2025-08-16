@@ -35,11 +35,16 @@ app.get("/health", (req, res) => {
     res.status(200).json({ success: true, message: "Server is healthy" });
 });
 
+// Auth routes
 app.use("/api/v1/auth", authRoutes);
+
+// Other routes
 app.use("/api/v1/room", roomRouter)
 app.use("/api/v1/tasks", tasksRouter)
 app.use("/api/v1/user", userRouter)
 app.use("/api/v1/user-activities", userActivityRoutes);
+
+// Push Notifications
 app.use("/api/v1/push", pushRouter)
 
 // 404 Handler
@@ -50,7 +55,6 @@ app.use((req, res, next) => {
     error.status = "fail";
     next(error);
 });
-
 
 // Error Handler
 app.use(errorHandler);

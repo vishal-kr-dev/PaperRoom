@@ -476,7 +476,10 @@ const markComplete = asyncHandler(async (req, res) => {
         sendNotificationToRoom(user.roomId, {
             title: "Task Completed 🎉",
             body: `${user.username} completed ${updatedTask.title}`,
+            icon: "/icon-192x192.png",
+            badge: "/badge-72x72.png",
             data: {
+                timestamp: new Date().toISOString(),
                 url: "/activities",
             },
         });        
