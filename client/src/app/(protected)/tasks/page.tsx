@@ -18,28 +18,8 @@ import axiosInstance from "@/lib/axiosInstance";
 import TaskCard from "@/components/TaskCard";
 import { toast } from "sonner";
 import { useRoomStore } from "@/stores/roomStore";
-
-// Types
-interface Subtask {
-    id: string;
-    title: string;
-    completed: boolean;
-}
-
-interface Task {
-    id: string;
-    title: string;
-    description: string;
-    xp: number;
-    subtasks: Subtask[];
-    tag: string;
-    priority: "low" | "medium" | "high" | "urgent";
-    dailyTask: boolean;
-    deadline: string | null;
-    createdAt: string;
-    updatedAt: string;
-    isCompleted: boolean;
-}
+import { useTaskStore } from "@/stores/taskStore";
+import { Task } from "@/types/task";
 
 interface TaskFormData {
     title: string;
@@ -54,7 +34,17 @@ interface TaskFormData {
 
 // Points calculation logic
 const calculateTaskPoints = (
-    task: Omit<Task, "xp" | "id" | "createdAt" | "updatedAt">
+    task: Pick<
+        Task,
+        | "title"
+        | "description"
+        | "subtasks"
+        | "tag"
+        | "priority"
+        | "dailyTask"
+        | "deadline"
+        | "isCompleted"
+    >
 ): number => {
     const basePoints = 10;
 
@@ -104,7 +94,7 @@ const validateTask = (data: TaskFormData): string | null => {
 };
 
 const TaskBoard: React.FC = () => {
-    const [tasks, setTasks] = useState<Task[]>([]);
+    // const [tasks, setTasks] = useState<Task[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
@@ -119,35 +109,20 @@ const TaskBoard: React.FC = () => {
 
     const room = useRoomStore((s) => s.room);
 
+    const {
+        tasks,
+        isLoading,
+        error,
+        fetchTasks,
+        createTaskAsync,
+        deleteTaskAsync,
+        markCompleteAsync,
+        clearError,
+    } = useTaskStore();
+
     useEffect(() => {
         fetchTasks();
     }, []);
-
-    const fetchTasks = async () => {
-        try {
-            const response = await axiosInstance.get("/tasks");
-            const taskData = response.data.data;
-
-            const transformedTasks = taskData.map((task: Task) => ({
-                id: task.id,
-                title: task.title,
-                description: task.description || "",
-                xp: task.xp || calculateTaskPoints(task),
-                subtasks: task.subtasks || [],
-                tag: task.tag || "",
-                priority: task.priority || "medium",
-                dailyTask: task.dailyTask || false,
-                deadline: task.deadline || null,
-                isCompleted: task.isCompleted || false,
-                createdAt: task.createdAt || new Date().toISOString(),
-                updatedAt: task.updatedAt || new Date().toISOString(),
-            }));
-
-            setTasks(transformedTasks);
-        } catch (error) {
-            console.error("Error while fetching tasks:", error);
-        }
-    };
 
     const {
         register,
@@ -180,26 +155,38 @@ const TaskBoard: React.FC = () => {
 
     const watchedValues = watch();
 
-    const previewPoints = React.useMemo(() => {
-        return calculateTaskPoints({
-            title: watchedValues.title || "",
-            description: watchedValues.description || "",
-            subtasks:
-                watchedValues.subtasks?.map((st, index) => ({
-                    id: `temp-${index}`,
-                    title: st.title || "",
-                    completed: false,
-                })) || [],
-            tag: watchedValues.tag || "",
-            priority: watchedValues.priority,
-            dailyTask: watchedValues.dailyTask,
-            deadline: watchedValues.deadline || "",
-            isCompleted: watchedValues.isCompleted,
-        });
-    }, [watchedValues]);
+const previewPoints = React.useMemo(() => {
+    const previewTask: Partial<Task> &
+        Pick<
+            Task,
+            | "title"
+            | "description"
+            | "subtasks"
+            | "tag"
+            | "priority"
+            | "dailyTask"
+            | "deadline"
+            | "isCompleted"
+        > = {
+        title: watchedValues.title || "",
+        description: watchedValues.description || "",
+        subtasks: (watchedValues.subtasks || []).map((st, index) => ({
+            _id: `temp-${index}`,
+            title: st.title || "",
+            completed: false,
+        })),
+        tag: watchedValues.tag || "",
+        priority: watchedValues.priority,
+        dailyTask: watchedValues.dailyTask,
+        deadline: watchedValues.deadline || null,
+        isCompleted: watchedValues.isCompleted,
+    };
+
+    return calculateTaskPoints(previewTask as Task);
+}, [watchedValues]);
 
     const prepareEditForm = (task: Task) => {
-        setCurrentTaskId(task.id);
+        setCurrentTaskId(task._id);
         setIsEditMode(true);
         setIsModalOpen(true);
 
@@ -230,16 +217,6 @@ const TaskBoard: React.FC = () => {
             ...data,
             description: data.description || undefined,
             deadline: data.deadline || null,
-            xp: calculateTaskPoints({
-                title: data.title,
-                description: data.description,
-                subtasks: [],
-                tag: data.tag,
-                priority: data.priority,
-                dailyTask: data.dailyTask,
-                deadline: data.deadline,
-                isCompleted: data.isCompleted,
-            }),
             subtasks: data.subtasks.map((st) => ({
                 title: st.title,
                 completed: false,
@@ -277,17 +254,17 @@ const TaskBoard: React.FC = () => {
             fetchTasks(); // Refresh the task list
         } catch (error) {
             console.error("Error deleting task:", error);
-        }finally{
-            setLoadingTask({id: null, action: null})
+        } finally {
+            setLoadingTask({ id: null, action: null });
         }
     };
 
     const toggleSubtask = async (taskId: string, subtaskId: string) => {
         try {
-            const task = tasks.find((t) => t.id === taskId);
+            const task = tasks.find((t) => t._id === taskId);
             if (!task) return;
 
-            const subtask = task.subtasks.find((st) => st.id === subtaskId);
+            const subtask = task.subtasks.find((st) => st._id === subtaskId);
             if (!subtask) return;
 
             await axiosInstance.put(`/tasks/${taskId}/subtasks/${subtaskId}`, {
@@ -303,7 +280,7 @@ const TaskBoard: React.FC = () => {
     const toggleTaskCompletion = async (taskId: string) => {
         setLoadingTask({ id: taskId, action: "toggling" });
         try {
-            const task = tasks.find((t) => t.id === taskId);
+            const task = tasks.find((t) => t._id === taskId);
             if (!task) return;
 
             // Determine the action based on the current completion state
@@ -328,27 +305,6 @@ const TaskBoard: React.FC = () => {
             setLoadingTask({ id: null, action: null });
         }
     };
-
-    // const getPriorityColor = (priority: string) => {
-    //     switch (priority) {
-    //         case "low":
-    //             return "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400";
-    //         case "medium":
-    //             return "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400";
-    //         case "high":
-    //             return "bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400";
-    //         case "urgent":
-    //             return "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400";
-    //         default:
-    //             return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
-    //     }
-    // };
-
-    // const getCompletionColor = (isCompleted: boolean) => {
-    //     return isCompleted
-    //         ? "bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-400"
-    //         : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300";
-    // };
 
     const filteredTasks = React.useMemo(() => {
         switch (activeTab) {
@@ -470,7 +426,7 @@ const TaskBoard: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredTasks.map((task) => (
                         <TaskCard
-                            key={task.id}
+                            key={task._id}
                             task={task}
                             expandedTask={expandedTask}
                             setExpandedTask={setExpandedTask}
@@ -479,15 +435,15 @@ const TaskBoard: React.FC = () => {
                             prepareEditForm={prepareEditForm}
                             deleteTask={deleteTask}
                             isToggling={
-                                loadingTask.id === task.id &&
+                                loadingTask.id === task._id &&
                                 loadingTask.action === "toggling"
                             }
                             isDeleting={
-                                loadingTask.id === task.id &&
+                                loadingTask.id === task._id &&
                                 loadingTask.action === "deleting"
                             }
                             isEditing={
-                                loadingTask.id === task.id &&
+                                loadingTask.id === task._id &&
                                 loadingTask.action === "editing"
                             }
                         />

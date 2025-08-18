@@ -16,29 +16,9 @@ import {
     TrendingUp,
     Loader2,
 } from "lucide-react";
+import { Task } from "@/types/task";
 
 type PriorityLevel = "low" | "medium" | "high" | "urgent";
-
-interface Subtask {
-    id: string;
-    title: string;
-    completed: boolean;
-}
-
-interface Task {
-    id: string;
-    title: string;
-    description: string;
-    xp: number;
-    subtasks: Subtask[];
-    tag: string;
-    priority: PriorityLevel;
-    dailyTask: boolean;
-    deadline: string | null;
-    createdAt: string;
-    updatedAt: string;
-    isCompleted: boolean;
-}
 
 interface TaskCardProps {
     task: Task;
@@ -104,8 +84,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
         return new Date(deadline) < new Date() && !task.isCompleted;
     };
 
-    const completedSubtasks = task.subtasks.filter((st) => st.completed).length;
-    const totalSubtasks = task.subtasks.length;
+    const completedSubtasks =
+        task?.subtasks?.filter((st) => st.completed).length || 0;
+    const totalSubtasks = task?.subtasks?.length || 0;
     const progressPercentage =
         totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
@@ -221,7 +202,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                             className="flex items-center justify-between cursor-pointer mb-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                             onClick={() =>
                                 setExpandedTask(
-                                    expandedTask === task.id ? null : task.id
+                                    expandedTask === task._id ? null : task._id
                                 )
                             }
                         >
@@ -245,12 +226,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
                             </div>
                             <ChevronDown
                                 className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                                    expandedTask === task.id ? "rotate-180" : ""
+                                    expandedTask === task._id
+                                        ? "rotate-180"
+                                        : ""
                                 }`}
                             />
                         </div>
 
-                        {expandedTask === task.id && (
+                        {expandedTask === task._id && (
                             <div
                                 className="space-y-2"
                                 style={{
@@ -259,10 +242,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
                             >
                                 {task.subtasks.map((subtask) => (
                                     <div
-                                        key={subtask.id}
+                                        key={subtask._id}
                                         className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-700/50 dark:to-slate-700/50 rounded-lg cursor-pointer hover:from-gray-100 hover:to-slate-100 dark:hover:from-gray-600/50 dark:hover:to-slate-600/50 transition-all duration-200 border border-gray-200 dark:border-gray-600"
                                         onClick={() =>
-                                            toggleSubtask(task.id, subtask.id)
+                                            toggleSubtask(task._id, subtask._id)
                                         }
                                     >
                                         <div
@@ -311,7 +294,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
                 <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
                     <button
-                        onClick={() => toggleTaskCompletion(task.id)}
+                        onClick={() => toggleTaskCompletion(task._id)}
                         disabled={isToggling}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-all duration-200 disabled:cursor-not-allowed ${
                             isToggling
@@ -361,7 +344,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                         </button>
 
                         <button
-                            onClick={() => deleteTask(task.id)}
+                            onClick={() => deleteTask(task._id)}
                             disabled={isDeleting || isToggling || isEditing}
                             className={`p-2 rounded-lg transition-all duration-200 border ${
                                 isDeleting
