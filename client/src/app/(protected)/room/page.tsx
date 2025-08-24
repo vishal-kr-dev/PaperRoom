@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { InviteTokens, Room } from "@/types/room";
 import { useRoomStore } from "@/stores/roomStore";
-import { UserAvatar } from "@/components/UserAvatara";
+import { UserAvatar } from "@/components/UserAvatar";
 
 export default function RoomDetailsPage() {
     const [copied, setCopied] = useState<string | null>(null);

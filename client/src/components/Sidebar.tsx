@@ -11,17 +11,16 @@ import {
     // Users,
     // Bell,
     // User,
-    // Settings,
+    Settings,
     LogOut,
     History,
     UsersRound,
     // UsersRound,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { UserAvatar } from "./UserAvatara";
+import { UserAvatar } from "./UserAvatar";
 
 const Sidebar = () => {
-
     const pathname = usePathname();
 
     const { user, logout } = useAuthStore();
@@ -35,7 +34,7 @@ const Sidebar = () => {
         // { href: "/notifications", label: "Notifications", icon: Bell },
         { href: "/room", label: "Room", icon: UsersRound },
         // { href: "/profile", label: "Profile", icon: User },
-        // { href: "/settings", label: "Settings", icon: Settings },
+        { href: "/settings", label: "Settings", icon: Settings },
     ];
 
     const handleLogout = async () => {

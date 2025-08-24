@@ -12,7 +12,7 @@ import {
     Clock,
     Star,
 } from "lucide-react";
-import { UserAvatar } from "./UserAvatara";
+import { UserAvatar } from "./UserAvatar";
 
 interface ActivityItemProps {
     activity: UserActivity;

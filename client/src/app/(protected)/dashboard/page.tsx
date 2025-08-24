@@ -1,8 +1,8 @@
 "use client";
 
-import Leaderboard from "@/components/RankList";
 import PointsChart from "./_components/PointsChart";
 import TaskQuickComplete from "./_components/TaskQuickComplete";
+import Leaderboard from "./_components/RankList";
 
 const DashboardPage = () => {
     return (

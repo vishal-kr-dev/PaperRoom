@@ -6,7 +6,7 @@ import { useUIStore } from "@/stores/uiStore";
 import { Button } from "./ui/button";
 import { Moon, Sun, Menu, X, Bell } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
-import { UserAvatar } from "./UserAvatara";
+import { UserAvatar } from "./UserAvatar";
 
 const NavbarProtected = () => {
     const router = useRouter();
@@ -62,7 +62,10 @@ const NavbarProtected = () => {
                         )}
                     </Button>
 
-                    <UserAvatar username={user?.username} className="hidden lg:block" />
+                    <UserAvatar
+                        username={user?.username}
+                        className="hidden lg:block"
+                    />
                 </div>
             </div>
         </nav>
