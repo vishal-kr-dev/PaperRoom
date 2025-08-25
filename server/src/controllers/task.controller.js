@@ -139,15 +139,15 @@ const updateTask = asyncHandler(async (req, res) => {
 
     try {
         const result = await session.withTransaction(async () => {
-            const originalTask = await Task.findOne({
-                _id: id,
-                roomId: user.roomId,
-                isDeleted: false,
-            }).session(session);
+            // const originalTask = await Task.findOne({
+            //     _id: id,
+            //     roomId: user.roomId,
+            //     isDeleted: false,
+            // }).session(session);
 
-            if (!originalTask) {
-                throw new APIerror(404, "Task not found");
-            }
+            // if (!originalTask) {
+            //     throw new APIerror(404, "Task not found");
+            // }
 
             const updatedTask = await Task.findOneAndUpdate(
                 {
@@ -163,7 +163,7 @@ const updateTask = asyncHandler(async (req, res) => {
                     new: true,
                     session,
                 }
-            );
+            ).session(session);
 
             if (!updatedTask) {
                 throw new APIerror(404, "Task not found");

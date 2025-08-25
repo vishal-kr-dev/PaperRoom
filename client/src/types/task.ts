@@ -8,7 +8,7 @@ export interface Task {
     _id: string;
     title: string;
     description: string;
-    xp: number;
+    xp?: number;
     subtasks: Subtask[];
     tag: string;
     priority: "low" | "medium" | "high" | "urgent";

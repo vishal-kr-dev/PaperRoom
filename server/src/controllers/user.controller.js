@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { APIerror } from "../utils/APIerror.js";
 import { sendResponse } from "../utils/sendResponse.js";
 import { DailyStats } from "../models/DailyStats.model.js";
+import { MonthlyRankings } from "../models/MonthlyRanking.model.js";
 
 const getChartData = asyncHandler(async (req, res) => {
     const roomId = req.user.roomId;
@@ -100,4 +101,204 @@ const getChartData = asyncHandler(async (req, res) => {
     );
 });
 
-export { getChartData };
+const getRanking = asyncHandler(async (req, res) => {
+    const { year, month } = req.params;
+    const { roomId, username } = req.user;
+    const userId = req.user._id
+    console.log(year, month, roomId, username, userId)
+
+    let rankings = await getMonthlyRanking(
+        parseInt(year),
+        parseInt(month),
+        roomId
+    );
+
+    if (!rankings) {
+        return sendResponse(res, 204, [], "No ranking found");
+    }
+
+    // Get available months data
+    const availableMonths = await getAvailableMonths(roomId);
+
+    async function getMonthlyRanking(year, month, roomId) {
+        const currentDate = new Date();
+        const isCurrentMonth =
+            year === currentDate.getFullYear() &&
+            month === currentDate.getMonth() + 1;
+
+        // For past months, check pre-calculated data
+        if (!isCurrentMonth) {
+            const cached = await MonthlyRankings.findOne({
+                year,
+                month,
+                isFinalized: true,
+            });
+
+            if (cached) {
+                return cached.rankings;
+            }
+        }
+
+        // Calculate if not present in db
+        const calculatedRankings = await calculateRankingFromScratch(
+            year,
+            month,
+            roomId
+        );
+
+        // Store the calculated data for past months (finalized data)
+        if (
+            !isCurrentMonth &&
+            calculatedRankings &&
+            calculatedRankings.length > 0
+        ) {
+            try {
+                await MonthlyRankings.findOneAndUpdate(
+                    { year, month, roomId },
+                    {
+                        year,
+                        month,
+                        roomId,
+                        rankings: calculatedRankings,
+                        isFinalized: true,
+                        lastUpdated: new Date(),
+                    },
+                    {
+                        upsert: true,
+                        new: true,
+                    }
+                );
+                console.log(`Stored rankings for ${year}-${month}`);
+            } catch (error) {
+                console.error(
+                    `Error storing rankings for ${year}-${month}:`,
+                    error
+                );
+                // Continue execution even if storing fails
+            }
+        }
+
+        return calculatedRankings;
+    }
+
+    async function calculateRankingFromScratch(year, month, roomId = null) {
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 1);
+
+        let matchCondition = {
+            date: { $gte: startDate, $lt: endDate },
+        };
+
+        if (roomId) {
+            matchCondition.roomId = roomId;
+        }
+
+        return await DailyStats.aggregate([
+            { $match: matchCondition },
+            {
+                $group: {
+                    _id: "$userId",
+                    monthlyXP: { $sum: "$xp" },
+                    roomId: { $first: "$roomId" },
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "user",
+                },
+            },
+            {
+                $project: {
+                    userId: "$_id",
+                    username: { $arrayElemAt: ["$user.username", 0] },
+                    monthlyXP: 1,
+                },
+            },
+            { $sort: { monthlyXP: -1 } },
+        ]);
+    }
+
+    async function getAvailableMonths(roomId) {
+        let matchCondition = {};
+        if (roomId) {
+            matchCondition.roomId = roomId;
+        }
+
+        // Get available months from DailyStats
+        const availableFromStats = await DailyStats.aggregate([
+            { $match: matchCondition },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$date" },
+                        month: { $month: "$date" },
+                    },
+                },
+            },
+            {
+                $project: {
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    _id: 0,
+                },
+            },
+            { $sort: { year: -1, month: -1 } },
+        ]);
+
+        // Get available months from MonthlyRankings (finalized data)
+        let monthlyRankingsMatch = { isFinalized: true };
+        if (roomId) {
+            monthCondition = {
+                ...monthlyRankingsMatch,
+                "rankings.roomId": roomId,
+            };
+        }
+
+        const availableFromRankings = await MonthlyRankings.aggregate([
+            { $match: monthlyRankingsMatch },
+            {
+                $project: {
+                    year: 1,
+                    month: 1,
+                    _id: 0,
+                },
+            },
+            { $sort: { year: -1, month: -1 } },
+        ]);
+
+        // Combine and deduplicate
+        const allMonths = [...availableFromStats, ...availableFromRankings];
+        const uniqueMonths = allMonths.reduce((acc, current) => {
+            const exists = acc.find(
+                (item) =>
+                    item.year === current.year && item.month === current.month
+            );
+            if (!exists) {
+                acc.push(current);
+            }
+            return acc;
+        }, []);
+
+        // Sort by year and month (most recent first)
+        uniqueMonths.sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;
+            return b.month - a.month;
+        });
+
+        return uniqueMonths;
+    }
+
+    const responseData = {
+        rankings,
+        availableMonths,
+        currentYear: parseInt(year),
+        currentMonth: parseInt(month),
+    };
+
+    return sendResponse(res, 200, responseData, "Ranking fetched successfully");
+});
+
+export { getChartData, getRanking };

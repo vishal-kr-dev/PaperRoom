@@ -25,6 +25,6 @@ router
 
 router.patch("/:id/complete", verifyJWT, markComplete);
 
-router.patch("/:id/incomplete", verifyJWT, markIncomplete)
+router.patch("/:id/pending", verifyJWT, markIncomplete)
 
 export default router;

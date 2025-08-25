@@ -32,7 +32,7 @@ interface TaskStore {
 
     fetchTasks: () => Promise<void>;
     createTaskAsync: (task: Omit<Task, "_id">) => Promise<Task | null>;
-    updateTaskAsync: (task: Task) => Promise<void>;
+    updateTaskAsync: (task: Task, id: string) => Promise<void>;
     deleteTaskAsync: (id: string) => Promise<void>;
     markCompleteAsync: (id: string) => Promise<void>;
     markPendingAsync: (id: string) => Promise<void>;
@@ -139,14 +139,15 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         }
     },
 
-    updateTaskAsync: async (task) => {
+    updateTaskAsync: async (task, id) => {
         const { setError, updateTask, setTaskLoading } = get();
 
         try {
             setTaskLoading(task._id, "isEditing", true);
             setError(null);
+            console.log("updated", task)
 
-            const { data } = await axiosInstance.put("/tasks", task);
+            const { data } = await axiosInstance.put(`/tasks/${id}`, task);
             updateTask(task._id, data.data);
         } catch (error: any) {
             const errorMessage =

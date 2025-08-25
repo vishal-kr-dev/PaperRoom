@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Trophy,
     Users,
@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserAvatar } from "../../../../components/UserAvatar";
+import axiosInstance from "@/lib/axiosInstance";
 
 interface Users {
     username: string;
@@ -103,6 +104,21 @@ const Leaderboard: React.FC<MembersListProps> = ({
         availableMonths[0] || "2025-01"
     );
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const current = new Date()
+    const year = current.getFullYear()
+    const month = current.getMonth()
+    console.log( year, month)
+
+    useEffect(() => {
+        const temp = async () =>{
+            const ranks = await axiosInstance(`/user/rankings/${year}/${month}`);
+            console.log("ranks data ", ranks)
+        }
+        temp();
+
+    }, [])
+    
 
     const showEmpty = !isLoading && members.length === 0;
 

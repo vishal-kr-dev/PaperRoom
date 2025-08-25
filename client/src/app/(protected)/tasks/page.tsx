@@ -7,7 +7,6 @@ import {
     Trophy,
     Calendar,
     Star,
-    // Trash2,
     Check,
     Clock,
     AlertTriangle,
@@ -19,7 +18,8 @@ import TaskCard from "@/components/TaskCard";
 import { toast } from "sonner";
 import { useRoomStore } from "@/stores/roomStore";
 import { useTaskStore } from "@/stores/taskStore";
-import { Task } from "@/types/task";
+import { Subtask, Task } from "@/types/task";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface TaskFormData {
     title: string;
@@ -32,60 +32,6 @@ interface TaskFormData {
     isCompleted: boolean;
 }
 
-// Points calculation logic
-const calculateTaskPoints = (
-    task: Pick<
-        Task,
-        | "title"
-        | "description"
-        | "subtasks"
-        | "tag"
-        | "priority"
-        | "dailyTask"
-        | "deadline"
-        | "isCompleted"
-    >
-): number => {
-    const basePoints = 10;
-
-    const priorityMultiplier = {
-        low: 1,
-        medium: 1.5,
-        high: 2,
-        urgent: 3,
-    };
-
-    const subtaskBonus = task.subtasks.length * 5;
-
-    const dailyBonus = task.dailyTask ? 15 : 0;
-
-    let deadlineBonus = 0;
-    if (task.deadline && !task.dailyTask) {
-        const deadlineDate = new Date(task.deadline);
-        const today = new Date();
-        const daysUntilDeadline = Math.ceil(
-            (deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-        );
-
-        if (daysUntilDeadline <= 1) deadlineBonus = 20;
-        else if (daysUntilDeadline <= 3) deadlineBonus = 15;
-        else if (daysUntilDeadline <= 7) deadlineBonus = 10;
-    }
-
-    const descriptionBonus = task.description.length > 50 ? 5 : 0;
-
-    const totalPoints = Math.round(
-        (basePoints +
-            subtaskBonus +
-            dailyBonus +
-            deadlineBonus +
-            descriptionBonus) *
-            priorityMultiplier[task.priority]
-    );
-
-    return Math.max(totalPoints, 5);
-};
-
 const validateTask = (data: TaskFormData): string | null => {
     if (data.dailyTask && data.deadline) {
         return "A task cannot be both daily and have a deadline. Please remove one of these options.";
@@ -94,7 +40,6 @@ const validateTask = (data: TaskFormData): string | null => {
 };
 
 const TaskBoard: React.FC = () => {
-    // const [tasks, setTasks] = useState<Task[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
@@ -102,10 +47,6 @@ const TaskBoard: React.FC = () => {
     const [expandedTask, setExpandedTask] = useState<string | null>(null);
     const [formError, setFormError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [loadingTask, setLoadingTask] = useState<{
-        id: string | null;
-        action: "toggling" | "deleting" | "editing" | null;
-    }>({ id: null, action: null });
 
     const room = useRoomStore((s) => s.room);
 
@@ -115,14 +56,20 @@ const TaskBoard: React.FC = () => {
         error,
         fetchTasks,
         createTaskAsync,
-        deleteTaskAsync,
-        markCompleteAsync,
+        updateTaskAsync,
         clearError,
     } = useTaskStore();
 
     useEffect(() => {
         fetchTasks();
     }, []);
+
+    useEffect(() => {
+        if (error) {
+            toast.error(error);
+            clearError();
+        }
+    }, [error, clearError]);
 
     const {
         register,
@@ -144,46 +91,7 @@ const TaskBoard: React.FC = () => {
         },
     });
 
-    // const {
-    //     fields: subtaskFields,
-    //     append: appendSubtask,
-    //     remove: removeSubtask,
-    // } = useFieldArray({
-    //     control,
-    //     name: "subtasks",
-    // });
-
     const watchedValues = watch();
-
-const previewPoints = React.useMemo(() => {
-    const previewTask: Partial<Task> &
-        Pick<
-            Task,
-            | "title"
-            | "description"
-            | "subtasks"
-            | "tag"
-            | "priority"
-            | "dailyTask"
-            | "deadline"
-            | "isCompleted"
-        > = {
-        title: watchedValues.title || "",
-        description: watchedValues.description || "",
-        subtasks: (watchedValues.subtasks || []).map((st, index) => ({
-            _id: `temp-${index}`,
-            title: st.title || "",
-            completed: false,
-        })),
-        tag: watchedValues.tag || "",
-        priority: watchedValues.priority,
-        dailyTask: watchedValues.dailyTask,
-        deadline: watchedValues.deadline || null,
-        isCompleted: watchedValues.isCompleted,
-    };
-
-    return calculateTaskPoints(previewTask as Task);
-}, [watchedValues]);
 
     const prepareEditForm = (task: Task) => {
         setCurrentTaskId(task._id);
@@ -213,49 +121,60 @@ const previewPoints = React.useMemo(() => {
 
         setFormError(null);
 
-        const taskData = {
-            ...data,
-            description: data.description || undefined,
+        const baseTaskData = {
+            title: data.title,
+            description: data.description || "",
+            tag: data.tag,
+            priority: data.priority,
+            dailyTask: data.dailyTask,
             deadline: data.deadline || null,
-            subtasks: data.subtasks.map((st) => ({
+            isCompleted: data.isCompleted,
+            subtasks: data.subtasks.map((st, index) => ({
+                _id: `temp-${Date.now()}-${index}`,
                 title: st.title,
                 completed: false,
-            })),
-            isCompleted: data.isCompleted,
+            })) as Subtask[],
         };
+        console.log("btd", baseTaskData);
+
+        const taskData: Omit<Task, "_id"> = {
+            ...baseTaskData,
+            completedBy: [],
+            createdBy: "",
+            roomId: room?._id || "",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+        console.log("td", taskData);
 
         try {
             if (isEditMode && currentTaskId) {
-                await axiosInstance.put(`/tasks/${currentTaskId}`, taskData);
+                const existingTask = tasks.find((t) => t._id === currentTaskId);
+                const updateData: Task = {
+                    ...taskData,
+                    _id: currentTaskId,
+                    completedBy: existingTask?.completedBy || [],
+                    createdBy: existingTask?.createdBy || taskData.createdBy,
+                    createdAt: existingTask?.createdAt || taskData.createdAt,
+                    updatedAt: new Date(),
+                };
+                await updateTaskAsync(updateData, currentTaskId);
             } else {
-                // Checked for creating daily task,
-                await axiosInstance.post("/tasks", taskData);
+                await createTaskAsync(taskData);
             }
 
-            toast.success("Task saved successfully!");
-
-            fetchTasks();
-            reset();
-            setIsModalOpen(false);
-            setIsEditMode(false);
-            setCurrentTaskId(null);
+            if (!error) {
+                toast.success("Task saved successfully!");
+                reset();
+                setIsModalOpen(false);
+                setIsEditMode(false);
+                setCurrentTaskId(null);
+            }
         } catch (error) {
             console.error("Error saving task:", error);
             toast.error("Failed to save task. Please try again.");
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-    const deleteTask = async (taskId: string) => {
-        setLoadingTask({ id: taskId, action: "deleting" });
-        try {
-            await axiosInstance.delete(`/tasks/${taskId}`);
-            fetchTasks(); // Refresh the task list
-        } catch (error) {
-            console.error("Error deleting task:", error);
-        } finally {
-            setLoadingTask({ id: null, action: null });
         }
     };
 
@@ -271,38 +190,9 @@ const previewPoints = React.useMemo(() => {
                 completed: !subtask.completed,
             });
 
-            fetchTasks(); // Refresh the task list
+            await fetchTasks();
         } catch (error) {
             console.error("Error toggling subtask:", error);
-        }
-    };
-
-    const toggleTaskCompletion = async (taskId: string) => {
-        setLoadingTask({ id: taskId, action: "toggling" });
-        try {
-            const task = tasks.find((t) => t._id === taskId);
-            if (!task) return;
-
-            // Determine the action based on the current completion state
-            const action = task.isCompleted ? "incomplete" : "complete";
-
-            // Make the appropriate PATCH request based on completion state
-            await axiosInstance.patch(`/tasks/${taskId}/${action}`);
-
-            // Success toast with the action (complete/incomplete)
-            toast.success(
-                `Task "${task.title}" marked as ${
-                    action === "complete" ? "completed" : "pending"
-                }!`
-            );
-
-            // Re-fetch tasks after update
-            fetchTasks();
-        } catch (error) {
-            console.error("Error toggling task completion:", error);
-            toast.error("Something went wrong. Please try again.");
-        } finally {
-            setLoadingTask({ id: null, action: null });
         }
     };
 
@@ -321,12 +211,16 @@ const previewPoints = React.useMemo(() => {
         }
     }, [tasks, activeTab]);
 
-    const totalXp = tasks.reduce((total, task) => total + task.xp, 0);
+    const totalXp = tasks.reduce((total, task) => total + (task.xp ?? 0), 0);
     const completedXp = tasks
         .filter((task) => task.isCompleted)
-        .reduce((total, task) => total + task.xp, 0);
+        .reduce((total, task) => total + (task.xp ?? 0), 0);
     const completionPercentage =
         tasks.length > 0 ? Math.round((completedXp / totalXp) * 100) : 0;
+
+    if (isLoading) {
+        return <LoadingSpinner />;
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
@@ -431,21 +325,7 @@ const previewPoints = React.useMemo(() => {
                             expandedTask={expandedTask}
                             setExpandedTask={setExpandedTask}
                             toggleSubtask={toggleSubtask}
-                            toggleTaskCompletion={toggleTaskCompletion}
                             prepareEditForm={prepareEditForm}
-                            deleteTask={deleteTask}
-                            isToggling={
-                                loadingTask.id === task._id &&
-                                loadingTask.action === "toggling"
-                            }
-                            isDeleting={
-                                loadingTask.id === task._id &&
-                                loadingTask.action === "deleting"
-                            }
-                            isEditing={
-                                loadingTask.id === task._id &&
-                                loadingTask.action === "editing"
-                            }
                         />
                     ))}
 
@@ -518,12 +398,6 @@ const previewPoints = React.useMemo(() => {
                                         </>
                                     )}
                                 </h2>
-                                <div className="flex items-center gap-2 bg-indigo-100 dark:bg-indigo-900/20 px-3 py-1.5 rounded text-indigo-700 dark:text-indigo-300">
-                                    <Star className="w-4 h-4" />
-                                    <span className="font-medium">
-                                        {previewPoints} XP
-                                    </span>
-                                </div>
                             </div>
 
                             {formError && (
@@ -539,7 +413,7 @@ const previewPoints = React.useMemo(() => {
                             >
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Task Title *
+                                        Task Title
                                     </label>
                                     <input
                                         {...register("title", {
@@ -570,10 +444,13 @@ const previewPoints = React.useMemo(() => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Tag *
+                                            Tag
                                         </label>
                                         <select
-                                            {...register("tag")}
+                                            {...register("tag", {
+                                                required:
+                                                    "Tag selection in required",
+                                            })}
                                             className="w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                         >
                                             <option value="">Select tag</option>
@@ -583,11 +460,16 @@ const previewPoints = React.useMemo(() => {
                                                 </option>
                                             ))}
                                         </select>
+                                        {errors.tag && (
+                                            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                                                {errors.tag.message}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Priority *
+                                            Priority
                                         </label>
                                         <select
                                             {...register("priority")}
@@ -603,23 +485,6 @@ const previewPoints = React.useMemo(() => {
                                             </option>
                                         </select>
                                     </div>
-
-                                    {/* <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Completion Status
-                                        </label>
-                                        <select
-                                            {...register("isCompleted")}
-                                            className="w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                        >
-                                            <option value="false">
-                                                Pending
-                                            </option>
-                                            <option value="true">
-                                                Completed
-                                            </option>
-                                        </select>
-                                    </div> */}
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

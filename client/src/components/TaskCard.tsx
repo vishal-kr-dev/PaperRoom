@@ -17,6 +17,7 @@ import {
     Loader2,
 } from "lucide-react";
 import { Task } from "@/types/task";
+import { useTaskStore } from "@/stores/taskStore";
 
 type PriorityLevel = "low" | "medium" | "high" | "urgent";
 
@@ -25,12 +26,7 @@ interface TaskCardProps {
     expandedTask: string | null;
     setExpandedTask: (id: string | null) => void;
     toggleSubtask: (taskId: string, subtaskId: string) => void;
-    toggleTaskCompletion: (taskId: string) => void;
-    prepareEditForm: (task: Task) => void;
-    deleteTask: (taskId: string) => void;
-    isToggling?: boolean;
-    isDeleting?: boolean;
-    isEditing?: boolean;
+    prepareEditForm: (task: Task) => void; // Keep this for external edit handling
 }
 
 type PriorityColorMap = {
@@ -44,13 +40,39 @@ const TaskCard: React.FC<TaskCardProps> = ({
     expandedTask,
     setExpandedTask,
     toggleSubtask,
-    toggleTaskCompletion,
-    prepareEditForm,
-    deleteTask,
-    isToggling,
-    isDeleting,
-    isEditing,
+    prepareEditForm, 
 }) => {
+    const deleteTaskAsync = useTaskStore((state) => state.deleteTaskAsync);
+    const markCompleteAsync = useTaskStore((state) => state.markCompleteAsync);
+    const markPendingAsync = useTaskStore((state) => state.markPendingAsync);
+
+    const isToggling = useTaskStore(
+        (state) => state.taskLoadingStates[task._id]?.isToggling || false
+    );
+    const isDeleting = useTaskStore(
+        (state) => state.taskLoadingStates[task._id]?.isDeleting || false
+    );
+    const isEditing = useTaskStore(
+        (state) => state.taskLoadingStates[task._id]?.isEditing || false
+    );
+
+    // Handle actions directly in component
+    const toggleTaskCompletion = async () => {
+        if (task.isCompleted) {
+            await markPendingAsync(task._id);
+        } else {
+            await markCompleteAsync(task._id);
+        }
+    };
+
+    const handleEdit = () => {
+        prepareEditForm(task);
+    };
+
+    const handleDelete = async () => {
+        await deleteTaskAsync(task._id);
+    };
+
     const getPriorityColor = (priority: PriorityLevel): string => {
         const colorMap: PriorityColorMap = {
             low: "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800",
@@ -294,7 +316,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
                 <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
                     <button
-                        onClick={() => toggleTaskCompletion(task._id)}
+                        onClick={toggleTaskCompletion}
                         disabled={isToggling}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-all duration-200 disabled:cursor-not-allowed ${
                             isToggling
@@ -323,7 +345,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     </button>
                     <div className="flex gap-2">
                         <button
-                            onClick={() => prepareEditForm(task)}
+                            onClick={handleEdit}
                             disabled={isEditing || isToggling || isDeleting}
                             className={`p-2 rounded-lg transition-all duration-200 border ${
                                 isEditing
@@ -344,7 +366,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                         </button>
 
                         <button
-                            onClick={() => deleteTask(task._id)}
+                            onClick={handleDelete}
                             disabled={isDeleting || isToggling || isEditing}
                             className={`p-2 rounded-lg transition-all duration-200 border ${
                                 isDeleting
