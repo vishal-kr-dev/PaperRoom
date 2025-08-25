@@ -8,7 +8,7 @@ export const taskSchema = z.object({
         .string()
         .trim()
         .optional(),
-    xp: z.number().min(0, { message: "XP must be a non-negative number" }),
+    // xp: z.number().min(0, { message: "XP must be a non-negative number" }),
     subtasks: z.array(z.string().trim()).optional(),
     tag: z.string().min(1, { message: "Please select a single tag" }).trim(),
     priority: priorityEnum.default("medium"),

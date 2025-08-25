@@ -114,6 +114,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
                 "Failed to fetch tasks";
             setError(errorMessage);
             console.error("Error fetching tasks:", error);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -135,7 +136,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
                 "Failed to create task";
             setError(errorMessage);
             console.error("Error creating task:", error);
-            return null;
+            throw error;
         }
     },
 
@@ -145,7 +146,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         try {
             setTaskLoading(task._id, "isEditing", true);
             setError(null);
-            console.log("updated", task)
+            console.log("updated", task);
 
             const { data } = await axiosInstance.put(`/tasks/${id}`, task);
             updateTask(task._id, data.data);
@@ -156,6 +157,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
                 "Failed to update task";
             setError(errorMessage);
             console.error("Error updating task:", error);
+            throw error;
         } finally {
             setTaskLoading(task._id, "isEditing", false);
         }
@@ -178,6 +180,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
             setError(errorMessage);
             console.error("Error deleting task:", error);
             setTaskLoading(id, "isDeleting", false);
+            throw error;
         }
     },
 
@@ -197,6 +200,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
                 "Failed to mark task as complete";
             setError(errorMessage);
             console.error("Error marking task complete:", error);
+            throw error;
         } finally {
             setTaskLoading(id, "isToggling", false);
         }
@@ -218,6 +222,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
                 "Failed to mark task as pending";
             setError(errorMessage);
             console.error("Error marking task pending:", error);
+            throw error;
         } finally {
             setTaskLoading(id, "isToggling", false);
         }
