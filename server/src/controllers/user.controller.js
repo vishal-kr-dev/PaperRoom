@@ -69,7 +69,7 @@ const getChartData = asyncHandler(async (req, res) => {
     for (let i = 0; i < 7; i++) {
         const d = new Date();
         d.setDate(now.getDate() - 6 + i);
-        const isoDate = d.toISOString().split("T")[0]; 
+        const isoDate = d.toISOString().split("T")[0];
         past7Days.push(isoDate);
     }
 
@@ -103,9 +103,7 @@ const getChartData = asyncHandler(async (req, res) => {
 
 const getRanking = asyncHandler(async (req, res) => {
     const { year, month } = req.params;
-    const { roomId, username } = req.user;
-    const userId = req.user._id
-    console.log(year, month, roomId, username, userId)
+    const { roomId } = req.user;
 
     let rankings = await getMonthlyRanking(
         parseInt(year),
@@ -121,6 +119,7 @@ const getRanking = asyncHandler(async (req, res) => {
     const availableMonths = await getAvailableMonths(roomId);
 
     async function getMonthlyRanking(year, month, roomId) {
+
         const currentDate = new Date();
         const isCurrentMonth =
             year === currentDate.getFullYear() &&
@@ -154,27 +153,25 @@ const getRanking = asyncHandler(async (req, res) => {
         ) {
             try {
                 await MonthlyRankings.findOneAndUpdate(
-                    { year, month, roomId },
+                    { year, month },
                     {
                         year,
                         month,
-                        roomId,
                         rankings: calculatedRankings,
                         isFinalized: true,
-                        lastUpdated: new Date(),
+                        calculatedAt: new Date(),
                     },
                     {
                         upsert: true,
                         new: true,
                     }
                 );
-                console.log(`Stored rankings for ${year}-${month}`);
+
             } catch (error) {
                 console.error(
                     `Error storing rankings for ${year}-${month}:`,
                     error
                 );
-                // Continue execution even if storing fails
             }
         }
 
@@ -182,6 +179,7 @@ const getRanking = asyncHandler(async (req, res) => {
     }
 
     async function calculateRankingFromScratch(year, month, roomId = null) {
+
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 1);
 
@@ -193,7 +191,7 @@ const getRanking = asyncHandler(async (req, res) => {
             matchCondition.roomId = roomId;
         }
 
-        return await DailyStats.aggregate([
+        const result = await DailyStats.aggregate([
             { $match: matchCondition },
             {
                 $group: {
@@ -214,14 +212,17 @@ const getRanking = asyncHandler(async (req, res) => {
                 $project: {
                     userId: "$_id",
                     username: { $arrayElemAt: ["$user.username", 0] },
+                    roomId: 1,
                     monthlyXP: 1,
                 },
             },
             { $sort: { monthlyXP: -1 } },
         ]);
+
+        return result;
     }
 
-    async function getAvailableMonths(roomId) {
+    async function getAvailableMonths(roomId = null) {
         let matchCondition = {};
         if (roomId) {
             matchCondition.roomId = roomId;
@@ -251,9 +252,9 @@ const getRanking = asyncHandler(async (req, res) => {
         // Get available months from MonthlyRankings (finalized data)
         let monthlyRankingsMatch = { isFinalized: true };
         if (roomId) {
-            monthCondition = {
+            monthlyRankingsMatch = {
                 ...monthlyRankingsMatch,
-                "rankings.roomId": roomId,
+                roomId: roomId,
             };
         }
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
     Trophy,
-    Users,
     Crown,
     Medal,
     Award,
@@ -13,18 +12,24 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserAvatar } from "../../../../components/UserAvatar";
 import axiosInstance from "@/lib/axiosInstance";
+import { ApiSuccessResponse } from "@/types/api";
 
-interface Users {
+interface RankingUser {
+    _id: string;
+    monthlyXP: number;
+    roomId: string;
+    userId: string;
     username: string;
-    score: number;
-    month?: string;
+}
+
+interface AvailableMonth {
+    year: number;
+    month: number;
 }
 
 interface MembersListProps {
-    members?: Users[];
     className?: string;
-    isLoading?: boolean;
-    availableMonths?: string[];
+    roomId?: string; // Add roomId if needed for filtering
 }
 
 const getRankIcon = (rank: number) => {
@@ -80,71 +85,90 @@ const getRankColors = (rank: number) => {
 };
 
 const Leaderboard: React.FC<MembersListProps> = ({
-    members = [
-        { username: "AlexTheChampion", score: 2850, month: "2025-01" },
-        { username: "SarahProGamer", score: 2640, month: "2025-01" },
-        { username: "MikeSpeedster", score: 2580, month: "2025-01" },
-        { username: "tom", score: 1920, month: "2025-01" },
-        { username: "jerry", score: 1850, month: "2025-01" },
-        { username: "EmilyExpert", score: 1780, month: "2025-01" },
-        { username: "DavidDragon", score: 1650, month: "2025-01" },
-        { username: "LucyLegend", score: 1590, month: "2025-01" },
-        // Additional months data
-        { username: "AlexTheChampion", score: 2700, month: "2024-12" },
-        { username: "tom", score: 2100, month: "2024-12" },
-        { username: "SarahProGamer", score: 2000, month: "2024-12" },
-        { username: "jerry", score: 1950, month: "2024-12" },
-        { username: "MikeSpeedster", score: 1800, month: "2024-12" },
-    ],
-    availableMonths = ["2025-01", "2024-12", "2024-11", "2024-10"],
     className = "",
-    isLoading = false,
+    roomId,
 }) => {
-    const [selectedMonth, setSelectedMonth] = useState(
-        availableMonths[0] || "2025-01"
+    const [rankings, setRankings] = useState<RankingUser[]>([]);
+    const [availableMonths, setAvailableMonths] = useState<AvailableMonth[]>(
+        []
+    );
+    const [selectedMonth, setSelectedMonth] = useState<AvailableMonth | null>(
+        null
     );
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const current = new Date()
-    const year = current.getFullYear()
-    const month = current.getMonth()
-    console.log( year, month)
+    const formatMonthKey = (month: AvailableMonth) =>
+        `${month.year}-${month.month.toString().padStart(2, "0")}`;
 
-    useEffect(() => {
-        const temp = async () =>{
-            const ranks = await axiosInstance(`/user/rankings/${year}/${month}`);
-            console.log("ranks data ", ranks)
-        }
-        temp();
-
-    }, [])
-    
-
-    const showEmpty = !isLoading && members.length === 0;
-
-    // Filter members by selected month and sort
-    const filteredMembers = members.filter(
-        (member) => !member.month || member.month === selectedMonth
-    );
-
-    const sortedMembers = [...filteredMembers].sort((a, b) => {
-        if (a.score && b.score) return b.score - a.score;
-        return a.username.localeCompare(b.username);
-    });
-
-    const formatMonthDisplay = (monthStr: string) => {
-        const [year, month] = monthStr.split("-");
-        const date = new Date(parseInt(year), parseInt(month) - 1);
+    const formatMonthDisplay = (month: AvailableMonth) => {
+        const date = new Date(month.year, month.month - 1);
         return date.toLocaleDateString("en-US", {
             month: "long",
             year: "numeric",
         });
     };
 
+    const getRankings = async (year: number, month: number) => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            const response = await axiosInstance.get(
+                `/user/rankings/${year}/${month}`
+            );
+            const apiData = response.data.data;
+            console.log(apiData)
+
+            if (response.status === 200) {
+                setRankings(apiData.rankings);
+                setAvailableMonths(apiData.availableMonths);
+
+                // Set current month as selected if not already set
+                if (!selectedMonth) {
+                    const currentMonth = {
+                        year: apiData.currentYear,
+                        month: apiData.currentMonth,
+                    };
+                    setSelectedMonth(currentMonth);
+                }
+            } else {
+                setError(apiData.message || "Failed to fetch rankings");
+            }
+        } catch (err) {
+            console.error("Error fetching rankings:", err);
+            setError("Failed to load rankings. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const current = new Date();
+        const year = current.getFullYear();
+        const month = current.getMonth() + 1;
+
+        getRankings(year, month);
+    }, []);
+
+    useEffect(() => {
+        if (selectedMonth) {
+            getRankings(selectedMonth.year, selectedMonth.month);
+        }
+    }, [selectedMonth]);
+
+    // Sort rankings by monthlyXP (score)
+    const sortedRankings = [...rankings].sort(
+        (a, b) => b.monthlyXP - a.monthlyXP
+    );
+
+    const showEmpty = !isLoading && sortedRankings.length === 0;
+
     return (
         <div
             className={cn(
-                "rounded-xl border border-border/60 bg-card/80 dark:bg-card/40 backdrop-blur-sm shadow-lg dark:shadow-2xl",
+                "rounded-xl border border-border/60 bg-card/80 dark:bg-card/40 backdrop-blur-sm shadow-lg dark:shadow-2xl ",
                 className
             )}
         >
@@ -158,45 +182,53 @@ const Leaderboard: React.FC<MembersListProps> = ({
                 </div>
                 <div className="flex items-center space-x-4">
                     {/* Month Selector */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="flex items-center space-x-2 px-3 py-1.5 text-sm bg-muted/60 dark:bg-muted/40 hover:bg-muted/80 dark:hover:bg-muted/60 rounded-lg border border-border/40 transition-colors"
-                        >
-                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="text-foreground font-medium">
-                                {formatMonthDisplay(selectedMonth)}
-                            </span>
-                            <ChevronDown
-                                className={cn(
-                                    "h-3.5 w-3.5 text-muted-foreground transition-transform",
-                                    isDropdownOpen && "rotate-180"
-                                )}
-                            />
-                        </button>
+                    {availableMonths.length > 0 && selectedMonth && (
+                        <div className="relative">
+                            <button
+                                onClick={() =>
+                                    setIsDropdownOpen(!isDropdownOpen)
+                                }
+                                className="flex items-center space-x-2 px-3 py-1.5 text-sm bg-muted/60 dark:bg-muted/40 hover:bg-muted/80 dark:hover:bg-muted/60 rounded-lg border border-border/40 transition-colors"
+                            >
+                                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="text-foreground font-medium">
+                                    {formatMonthDisplay(selectedMonth)}
+                                </span>
+                                <ChevronDown
+                                    className={cn(
+                                        "h-3.5 w-3.5 text-muted-foreground transition-transform",
+                                        isDropdownOpen && "rotate-180"
+                                    )}
+                                />
+                            </button>
 
-                        {/* Dropdown */}
-                        {isDropdownOpen && (
-                            <div className="absolute top-full right-0 mt-1 w-48 bg-popover border border-border/60 rounded-lg shadow-lg dark:shadow-xl z-50 py-1">
-                                {availableMonths.map((month) => (
-                                    <button
-                                        key={month}
-                                        onClick={() => {
-                                            setSelectedMonth(month);
-                                            setIsDropdownOpen(false);
-                                        }}
-                                        className={cn(
-                                            "w-full px-3 py-2 text-left text-sm hover:bg-muted/60 dark:hover:bg-muted/40 transition-colors",
-                                            selectedMonth === month &&
-                                                "bg-muted/80 dark:bg-muted/60 text-foreground font-medium"
-                                        )}
-                                    >
-                                        {formatMonthDisplay(month)}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                            {/* Dropdown */}
+                            {isDropdownOpen && (
+                                <div className="absolute top-full right-0 mt-1 w-48 bg-popover border border-border/60 rounded-lg shadow-lg dark:shadow-xl z-50 py-1">
+                                    {availableMonths.map((month) => (
+                                        <button
+                                            key={formatMonthKey(month)}
+                                            onClick={() => {
+                                                setSelectedMonth(month);
+                                                setIsDropdownOpen(false);
+                                            }}
+                                            className={cn(
+                                                "w-full px-3 py-2 text-left text-sm hover:bg-muted/60 dark:hover:bg-muted/40 transition-colors",
+                                                selectedMonth &&
+                                                    formatMonthKey(
+                                                        selectedMonth
+                                                    ) ===
+                                                        formatMonthKey(month) &&
+                                                    "bg-muted/80 dark:bg-muted/60 text-foreground font-medium"
+                                            )}
+                                        >
+                                            {formatMonthDisplay(month)}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -218,6 +250,26 @@ const Leaderboard: React.FC<MembersListProps> = ({
                             </div>
                         ))}
                     </div>
+                ) : error ? (
+                    <div className="p-8 text-center">
+                        <Trophy className="h-12 w-12 text-red-400/50 mx-auto mb-4" />
+                        <p className="text-red-600 dark:text-red-400 font-medium">
+                            {error}
+                        </p>
+                        <button
+                            onClick={() => {
+                                if (selectedMonth) {
+                                    getRankings(
+                                        selectedMonth.year,
+                                        selectedMonth.month
+                                    );
+                                }
+                            }}
+                            className="mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            Try again
+                        </button>
+                    </div>
                 ) : showEmpty ? (
                     <div className="p-8 text-center">
                         <Trophy className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
@@ -231,13 +283,13 @@ const Leaderboard: React.FC<MembersListProps> = ({
                 ) : (
                     <div className="space-y-1">
                         <AnimatePresence>
-                            {sortedMembers.map((member, index) => {
+                            {sortedRankings.map((user, index) => {
                                 const rank = index + 1;
                                 const colors = getRankColors(rank);
 
                                 return (
                                     <motion.div
-                                        key={member.username}
+                                        key={user._id}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -20 }}
@@ -264,7 +316,7 @@ const Leaderboard: React.FC<MembersListProps> = ({
 
                                         {/* Avatar */}
                                         <UserAvatar
-                                            username={member.username}
+                                            username={user.username}
                                             size={rank <= 3 ? "md" : "sm"}
                                         />
 
@@ -277,14 +329,12 @@ const Leaderboard: React.FC<MembersListProps> = ({
                                                     rank <= 3 && "font-semibold"
                                                 )}
                                             >
-                                                {member.username}
+                                                {user.username}
                                             </p>
-                                            {member.score && (
-                                                <p className="text-xs text-muted-foreground/80">
-                                                    {member.score.toLocaleString()}{" "}
-                                                    pts
-                                                </p>
-                                            )}
+                                            <p className="text-xs text-muted-foreground/80">
+                                                {user.monthlyXP.toLocaleString()}{" "}
+                                                XP
+                                            </p>
                                         </div>
 
                                         {/* Top 3 Sparkle Effect */}
@@ -311,13 +361,17 @@ const Leaderboard: React.FC<MembersListProps> = ({
             </div>
 
             {/* Footer for top performers */}
-            {!isLoading && !showEmpty && sortedMembers.length > 0 && (
-                <div className="border-t border-border/40 bg-muted/30 dark:bg-muted/20 px-4 py-2">
-                    <p className="text-xs text-muted-foreground/90 text-center">
-                        🏆 {formatMonthDisplay(selectedMonth)} Champions
-                    </p>
-                </div>
-            )}
+            {!isLoading &&
+                !showEmpty &&
+                !error &&
+                sortedRankings.length > 0 &&
+                selectedMonth && (
+                    <div className="border-t border-border/40 bg-muted/30 dark:bg-muted/20 px-4 py-2">
+                        <p className="text-xs text-muted-foreground/90 text-center">
+                            🏆 {formatMonthDisplay(selectedMonth)} Champions
+                        </p>
+                    </div>
+                )}
         </div>
     );
 };
