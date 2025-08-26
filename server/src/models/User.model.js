@@ -38,6 +38,11 @@ const userSchema = new Schema(
             default: null,
             select: false,
         },
+        refreshTokenExpiry: {
+            type: Date,
+            default: null,
+            select: false,
+        },
         passwordResetToken: {
             type: String,
             default: null,
@@ -51,6 +56,19 @@ const userSchema = new Schema(
         emailVerified: {
             type: Boolean,
             default: false,
+        },
+        // to implement
+        lastLogin: {
+            type: Date,
+            default: null,
+        },
+        loginAttempts: {
+            type: Number,
+            default: 0,
+        },
+        lockUntil: {
+            type: Date,
+            default: null,
         },
     },
     {

@@ -71,7 +71,12 @@ const loginUser = asyncHandler(async (req, res) => {
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
+    const today = new Date()
+    const refreshTokenExpiryDate = new Date();
+    refreshTokenExpiryDate.setDate(today.getDate() + 7)
+
     user.refreshToken = refreshToken;
+    user.refreshTokenExpiry = refreshTokenExpiryDate;
     await user.save();
 
     const isProduction = process.env.NODE_ENV === "production";

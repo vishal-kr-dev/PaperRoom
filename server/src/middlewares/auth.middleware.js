@@ -4,25 +4,105 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
-    const access_token = req.cookies?.access_token
-    // const refresh_token = req.cookies?.refresh_token
+    const access_token = req.cookies?.access_token;
+    const refresh_token = req.cookies?.refresh_token;
 
     if (!access_token) {
-        throw new APIerror(401, "Unauthorized Access");
+        if (!refresh_token) {
+            throw new APIerror(401, "Unauthorized Access - No tokens provided");
+        }
+
+        const newAccessToken = await refreshAccessToken(refresh_token, res);
+        req.access_token = newAccessToken;
+
+        const decodedInfo = jwt.verify(
+            newAccessToken,
+            process.env.ACCESS_TOKEN_SECRET
+        );
+        const user = await User.findById(decodedInfo._id);
+
+        if (!user) {
+            throw new APIerror(401, "Invalid Access Token");
+        }
+
+        req.user = user;
+        return next();
     }
 
-    const decodedInfo = jwt.verify(
-        access_token,
-        process.env.ACCESS_TOKEN_SECRET
-    );
+    try {
+        const decodedInfo = jwt.verify(
+            access_token,
+            process.env.ACCESS_TOKEN_SECRET
+        );
+        const user = await User.findById(decodedInfo._id);
 
-    const user = await User.findById(decodedInfo._id)
+        if (!user) {
+            throw new APIerror(401, "Invalid Access Token");
+        }
 
-    if (!user) {
-        throw new APIerror(401, "Invalid Access Token");
+        req.user = user;
+        next();
+    } catch (error) {
+        if (!refresh_token) {
+            throw new APIerror(
+                401,
+                "Access token expired and no refresh token available"
+            );
+        }
+
+        try {
+            const newAccessToken = await refreshAccessToken(refresh_token, res);
+            const decodedInfo = jwt.verify(
+                newAccessToken,
+                process.env.ACCESS_TOKEN_SECRET
+            );
+            const user = await User.findById(decodedInfo._id);
+
+            if (!user) {
+                throw new APIerror(401, "Invalid Access Token");
+            }
+
+            req.user = user;
+            next();
+        } catch (refreshError) {
+            throw new APIerror(
+                401,
+                "Both access and refresh tokens are invalid"
+            );
+        }
     }
-
-    req.user = user
-
-    next();
 });
+
+const refreshAccessToken = async (refreshToken, res) => {
+    try {
+        const decodedRefresh = jwt.verify(
+            refreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        );
+
+        const user = await User.findById(decodedRefresh._id).select(
+            "+refreshToken +refreshTokenExpiry"
+        );
+
+        if (
+            !user ||
+            user.refreshToken !== refreshToken ||
+            new Date() > user.refreshTokenExpiry
+        ) {
+            throw new APIerror(401, "Invalid or expired refresh token");
+        }
+
+        const newAccessToken = user.generateAccessToken();
+
+        res.cookie("access_token", newAccessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+            maxAge: 60 * 60 * 1000,
+        });
+
+        return newAccessToken;
+    } catch (error) {
+        throw new APIerror(401, "Failed to refresh access token");
+    }
+};
