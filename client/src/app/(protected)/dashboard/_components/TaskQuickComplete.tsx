@@ -35,7 +35,7 @@ const TaskQuickComplete = () => {
 
     useEffect(() => {
         fetchTasks()
-    })
+    }, [])
     
 
     // Filter incomplete tasks

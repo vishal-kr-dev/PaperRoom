@@ -148,7 +148,7 @@ const Leaderboard: React.FC<MembersListProps> = ({
         const month = current.getMonth() + 1;
 
         getRankings(year, month);
-    });
+    },[]);
 
     useEffect(() => {
         if (selectedMonth) {
