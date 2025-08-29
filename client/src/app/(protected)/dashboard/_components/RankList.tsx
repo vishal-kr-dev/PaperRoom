@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserAvatar } from "../../../../components/UserAvatar";
 import axiosInstance from "@/lib/axiosInstance";
-import { ApiSuccessResponse } from "@/types/api";
 
 interface RankingUser {
     _id: string;
@@ -86,7 +85,6 @@ const getRankColors = (rank: number) => {
 
 const Leaderboard: React.FC<MembersListProps> = ({
     className = "",
-    roomId,
 }) => {
     const [rankings, setRankings] = useState<RankingUser[]>([]);
     const [availableMonths, setAvailableMonths] = useState<AvailableMonth[]>(
@@ -150,7 +148,7 @@ const Leaderboard: React.FC<MembersListProps> = ({
         const month = current.getMonth() + 1;
 
         getRankings(year, month);
-    }, []);
+    });
 
     useEffect(() => {
         if (selectedMonth) {

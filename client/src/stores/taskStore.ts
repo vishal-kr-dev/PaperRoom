@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Task } from "@/types/task";
 import axiosInstance from "@/lib/axiosInstance";
+import { extractErrorMessage } from "@/utils/errorUtils";
 
 interface TaskLoadingState {
     isToggling?: boolean;
@@ -107,11 +108,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
             const { data } = await axiosInstance.get("/tasks");
             setTasks(data.data);
-        } catch (error: any) {
+        } catch (error: unknown) {
             const errorMessage =
-                error.response?.data?.message ||
-                error.message ||
-                "Failed to fetch tasks";
+                extractErrorMessage(error) || "Failed to fetch tasks";
             setError(errorMessage);
             console.error("Error fetching tasks:", error);
             throw error;
@@ -129,11 +128,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
             const { data } = await axiosInstance.post("/tasks", taskData);
             addTask(data.data);
             return data.data;
-        } catch (error: any) {
+        } catch (error) {
             const errorMessage =
-                error.response?.data?.message ||
-                error.message ||
-                "Failed to create task";
+                extractErrorMessage(error) || "Failed to create task";
             setError(errorMessage);
             console.error("Error creating task:", error);
             throw error;
@@ -150,11 +147,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
             const { data } = await axiosInstance.put(`/tasks/${id}`, task);
             updateTask(task._id, data.data);
-        } catch (error: any) {
+        } catch (error) {
             const errorMessage =
-                error.response?.data?.message ||
-                error.message ||
-                "Failed to update task";
+                extractErrorMessage(error) || "Failed to update task";
             setError(errorMessage);
             console.error("Error updating task:", error);
             throw error;
@@ -172,11 +167,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
             await axiosInstance.delete(`/tasks/${id}`);
             removeTask(id);
-        } catch (error: any) {
+        } catch (error) {
             const errorMessage =
-                error.response?.data?.message ||
-                error.message ||
-                "Failed to delete task";
+                extractErrorMessage(error) || "Failed to delete task";
             setError(errorMessage);
             console.error("Error deleting task:", error);
             setTaskLoading(id, "isDeleting", false);
@@ -193,11 +186,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
             const { data } = await axiosInstance.patch(`/tasks/${id}/complete`);
             updateTask(id, { isCompleted: true, ...data.data });
-        } catch (error: any) {
+        } catch (error) {
             const errorMessage =
-                error.response?.data?.message ||
-                error.message ||
-                "Failed to mark task as complete";
+                extractErrorMessage(error) || "Failed to mark task as complete";
             setError(errorMessage);
             console.error("Error marking task complete:", error);
             throw error;
@@ -215,11 +206,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
             const { data } = await axiosInstance.patch(`/tasks/${id}/pending`);
             updateTask(id, { isCompleted: false, ...data.data });
-        } catch (error: any) {
+        } catch (error) {
             const errorMessage =
-                error.response?.data?.message ||
-                error.message ||
-                "Failed to mark task as pending";
+                extractErrorMessage(error) || "Failed to mark task as pending";
             setError(errorMessage);
             console.error("Error marking task pending:", error);
             throw error;

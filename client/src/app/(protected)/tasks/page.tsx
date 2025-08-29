@@ -62,7 +62,7 @@ const TaskBoard: React.FC = () => {
 
     useEffect(() => {
         fetchTasks();
-    }, []);
+    });
 
     useEffect(() => {
         if (error) {
