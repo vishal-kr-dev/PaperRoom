@@ -45,7 +45,7 @@ export const ProfileSettings: React.FC = () => {
 
             <div className="flex flex-col items-center md:items-start md:flex-row gap-5">
                 {/* Avatar Section */}
-                <UserAvatar className="w-25 h-25 mb-4" />
+                <UserAvatar username={user?.username} className="w-25 h-25 mb-4" />
 
                 {/* Profile Form */}
                 <form
