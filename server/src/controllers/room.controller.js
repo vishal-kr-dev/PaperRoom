@@ -6,7 +6,7 @@ import crypto from "crypto";
 import { createRoomCode } from "../utils/room/CreateRoomCode.js";
 import { APIerror } from "../utils/APIerror.js";
 import { User } from "../models/User.model.js";
-import { PushSubscription } from "../models/PushSubscription.model.js";
+import { NotificationSubscription } from "../models/Notifications.model.js";
 
 const getRoomData = asyncHandler(async (req, res) => {
     const roomId = req.user.roomId;
@@ -141,7 +141,7 @@ const leaveRoom = asyncHandler(async (req, res) => {
     req.user.roomId = null;
     await req.user.save();
 
-    await PushSubscription.deleteMany({ userId });
+    await NotificationSubscription.deleteMany({ userId });
 
     return sendResponse(res, 200, null, "Left the room successfully");
 });

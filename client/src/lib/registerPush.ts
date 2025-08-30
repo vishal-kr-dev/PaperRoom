@@ -1,43 +1,30 @@
-import axiosInstance from "./axiosInstance";
-
 export async function registerPush() {
     try {
-        if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-            console.warn("Push notifications not supported");
-            return null;
-        }
+        // if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        //     console.warn("Push notifications not supported");
+        //     return null;
+        // }
 
-        const permission = await Notification.requestPermission();
-        if (permission !== "granted") {
-            console.warn("Notification permission denied");
-            return null;
-        }
+        // const permission = await Notification.requestPermission();
+        // if (permission !== "granted") {
+        //     console.warn("Notification permission denied");
+        //     return null;
+        // }
 
-        const reg = await navigator.serviceWorker.register("/sw.js");
-        await navigator.serviceWorker.ready;
+        // // Register service worker
+        // const reg = await navigator.serviceWorker.register("/sw.js");
+        const reg = await navigator.serviceWorker.ready;
 
         const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-
         if (!publicKey) {
             console.error("Public VAPID key is not set");
             return null;
         }
 
-        const existingSubscription = await reg.pushManager.getSubscription();
-        if (existingSubscription) {
-            console.log("Already subscribed:", existingSubscription);
-            // Still send to server to ensure it's registered
-            try {
-                await axiosInstance.post("push/subscribe", {
-                    subscription: existingSubscription,
-                });
-            } catch (error) {
-                console.error(
-                    "Error updating existing subscription on server:",
-                    error
-                );
-            }
-            return existingSubscription;
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) {
+            console.log("Using existing subscription:", existing);
+            return existing;
         }
 
         const subscription = await reg.pushManager.subscribe({
@@ -45,11 +32,7 @@ export async function registerPush() {
             applicationServerKey: urlBase64ToUint8Array(publicKey),
         });
 
-        const res = await axiosInstance.post("push/subscribe", {
-            subscription,
-        });
-        console.log("Subscription registered:", res.data);
-
+        console.log("New subscription created:", subscription);
         return subscription;
     } catch (error) {
         console.error("Error during push registration:", error);

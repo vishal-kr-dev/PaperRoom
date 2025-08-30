@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import AuthThemeClient from "@/components/AuthThemeClient";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -38,39 +39,23 @@ export const metadata: Metadata = {
         siteName: "PaperRoom",
         locale: "en_US",
         type: "website",
-        // images: [
-        //   {
-        //     url: "https://paper-room.vercel.app/og-image.png",
-        //     width: 1200,
-        //     height: 630,
-        //     alt: "PaperRoom Dashboard Preview",
-        //   },
-        // ],
     },
     twitter: {
         card: "summary_large_image",
         title: "PaperRoom",
         description:
             "Gamify your productivity and team workflow with PaperRoom.",
-        // images: ["https://paper-room.vercel.app/og-image.png"],
-        // creator: "@yourTwitterHandle",
     },
     icons: {
         icon: "/favicon.ico",
         shortcut: "/favicon.ico",
         apple: "/apple-touch-icon.png",
     },
-    // authors: [{ name: "Vishal Kumar", url: "https://yourportfolio.com" }],
-    // creator: "Vishal Kumar",
+    authors: [
+        { name: "Vishal Kumar", url: "https://github.com/vishal-kr-dev" },
+    ],
+    creator: "Vishal Kumar",
 };
-
-// export const viewport: Viewport = {
-//     themeColor: [
-//         { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-//         { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
-//     ],
-// };
-
 
 export default function RootLayout({
     children,
@@ -86,6 +71,7 @@ export default function RootLayout({
                 <SpeedInsights />
                 <Toaster richColors position="top-center" />
                 <AuthThemeClient />
+                <ServiceWorkerRegistration />
                 <main>{children}</main>
             </body>
         </html>

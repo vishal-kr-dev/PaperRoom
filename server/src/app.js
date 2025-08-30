@@ -11,7 +11,7 @@ import roomRouter from "./routes/room.routes.js"
 import tasksRouter from "./routes/task.routes.js";
 import userRouter from "./routes/user.routes.js"
 import userActivityRoutes from "./routes/userActivity.routes.js"
-import pushRouter from "./routes/push.routes.js";
+import notificationRouter from "./routes/notification.routes.js";
 
 const app = express();
 
@@ -45,7 +45,7 @@ app.use("/api/v1/user", userRouter)
 app.use("/api/v1/user-activities", userActivityRoutes);
 
 // Push Notifications
-app.use("/api/v1/push", pushRouter)
+app.use("/api/v1/notification", notificationRouter)
 
 // 404 Handler
 app.use((req, res, next) => {
