@@ -257,7 +257,7 @@ export const NotificationSettings: React.FC = () => {
     }
 
     function createSubscriptionObject(): SubscriptionObject {
-        const reg = navigator.serviceWorker.getRegistration();
+        // const reg = navigator.serviceWorker.getRegistration();
         const currentSubscription = notifications.pushSubscription;
 
         const subscriptionObject: SubscriptionObject = {
